@@ -358,26 +358,42 @@ individuellen Let's-Encrypt-Zertifikats für `sonne.ingenieur-tools.de`.
 - `pending_domain_unverified_at: null` (Domain ist DNS-verifiziert, CNAME propagiert korrekt)
 - `openssl s_client -connect ... :443` liefert `CN=*.github.io` (kein individuelles Zert)
 
-**Ursache:** Die Let's-Encrypt-Zertifikatsausstellung war im Zustand `authorization_created` **festgehängt**
-und schritt nicht selbstständig fort — trotz korrektem CNAME/DNS. `PUT { "https_enforced": true }` →
+**Ursache:** Die Let's-Encrypt-Zertifikatsausstellung hängt im Zustand `authorization_created` **fest**
+und schreitet trotz korrektem CNAME/DNS/CAA nicht fort. `PUT { "https_enforced": true }` →
 `404 "The certificate has not finished being issued"`; `DELETE /pages` ist geblockt
 ("Deactivating GitHub pages ... not allowed").
 
-**Fix (erfolgreich, per GitHub-API):**
-```bash
-# 1) Custom Domain ENTFERNEN (leer setzen) — setzt Zert-Ausstellung zurück
-gh api -X PUT repos/PiBrainPi/sun-tracker/pages --input - <<'EOF'
-{"cname": ""}
-EOF
+**Differenzialdiagnose (ausgeschlossene Ursachen):**
+- **DNS:** `sonne` → CNAME `pibrainpi.github.io`, 4 GH-IPs — identisch zu `galton-board`/`wind-pv-map` ✅
+- **CAA:** `as per DoH` — `letsencrypt.org` ist erlaubt (CAA-Records von `pibrainpi.github.io` geerbt,
+  identisch zu funktionierenden Domains) ✅
+- **Custom Domain in Repo-Settings:** korrekt gesetzt (`cname` = `sonne.ingenieur-tools.de`) ✅
+- **Vergleich:** `galton-board`/`wind-pv-map` stehen auf cert.state = **`approved`** (Zert aktiv),
+  `sonne` bleibt bei **`authorization_created`** — bei *identischer* DNS/CAA/CNAME-Konfiguration.
 
-# 2) Kurz warten, dann Custom Domain NEU setzen — frischer Ausstellungsjob
-gh api -X PUT repos/PiBrainPi/sun-tracker/pages --input - <<'EOF'
-{"cname": "sonne.ingenieur-tools.de"}
-EOF
-```
-→ `cname` wieder gesetzt, Zert-Ausstellung neu gestartet. Verifikation per
-`gh api repos/PiBrainPi/sun-tracker/pages --jq '.https_certificate.state'` (soll `available`/`active`
-werden) bzw. `https_works()`-Check.
+**Versucht (erfolglos — Zert bleibt `authorization_created`):**
+1. `PUT /pages {"cname": "sonne.ingenieur-tools.de"}` (erneutes Setzen, idempotent) 
+2. `PUT /pages {"cname": ""}` → neu setzen (entfernen + wieder hinzufügen)
+3. `PUT /pages {"cname": "<zwischendomain>"}` → zurück (Zuordnung komplett neu aufbauen)
+4. `POST /pages/builds` (Pages-Build neu triggern)
+5. `PUT /pages {"https_enforced": true}` (blockiert: "certificate has not finished being issued")
+6. `GET /pages/domains` → 404 (Endpunkt nicht verfügbar)
+
+**Schlussfolgerung:** GitHub-infrastruktur-seitiger verklemmter Ausstellungszustand für die Kombination
+`PiBrainPi/sun-tracker` + `sonne.ingenieur-tools.de`. DNS/CAA/CNAME sind nachweislich korrekt.
+**Nächster Schritt: GitHub Support-Ticket** (Repo, Domain, Zert-Status nennen) — siehe § 13.2a.
+Die Site bleibt über `http://sonne.ingenieur-tools.de/` erreichbar; Apps/PDF-Export funktionieren
+(Geolocation nur auf HTTPS verfügbar, Rest offline).
+
+### 13.2a Support-Ticket-Vorlage (falls Zert nach 24h weiter `authorization_created`)
+
+> **Betreff:** GitHub Pages custom-domain certificate stuck in `authorization_created`
+> **Repo:** PiBrainPi/sun-tracker · **Domain:** sonne.ingenieur-tools.de
+> **Besorgung:** CNAME sonne → pibrainpi.github.io (4 IPs gesetzt), CAA erlaubt letsencrypt.org,
+> Custom Domain in Repo-Settings gesetzt, aber `https_certificate.state` bleibt seit 2026-08-30 bei
+> `authorization_created`. Andere Domains im selben Account (`galton-board`, `wind-pv-map`) stehen auf
+> `approved` und funktionieren — gleiche DNS/CAA-Konfiguration. `PUT https_enforced=true` → 404.
+> Bitte Ausstellung auf GitHub-Seite erneut anstoßen.
 
 **Monitoring:** Cron-Job `d9880f4fff1e` (`~/.hermes/scripts/sonne_https_watchdog.py`) prüft alle 10 Minuten
 mit echter TLS-Zertifikatsverifikation, ob das Zert aktiv ist, und meldet **nur bei Erfolg** (Watchdog-Pattern).
