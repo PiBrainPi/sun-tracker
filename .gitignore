@@ -1,0 +1,22 @@
+# Build-Artefakte & große generierte Medien (nur lokal, nicht ins Repo)
+config/
+build/
+dist/
+*.log
+
+# Generierte Screenshots / Berichte / Beispiel-PDF (lokal für Entwicklung)
+assets/diagramm_*.png
+assets/final_*.png
+assets/matrix_*.png
+assets/screenshot_*.png
+assets/make_example_pdf.js 2>/dev/null
+assets/Beispielbericht_*.pdf
+
+# Temporäre lokale Dateien
+*.tmp
+.DS_Store
+
+# Altes Python-Projekt (Historie)
+_archiv_alt/
+__pycache__/
+*.pyc

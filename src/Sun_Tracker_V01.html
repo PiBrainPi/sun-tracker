@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sun Tracker</title>
+<style>
+/* ============ THEME: CSS-Variablen ============ */
+:root, [data-theme="light"] {
+  --bg: #f5f7fa; --card: #ffffff; --border: #dbe2ec;
+  --text: #1a2332; --muted: #5b6b82; --accent: #e68a00; --accent2: #1f6feb;
+  --chip: #eef2f7; --shadow: 0 2px 8px rgba(20,30,50,.08);
+  --grid: #dbe2ec; --axis: #8a97ab;
+  --c-summer: #e68a00; --c-winter: #1f6feb; --c-equi: #16a34a;
+}
+[data-theme="dark"] {
+  --bg: #0f1419; --card: #1a2230; --border: #263046;
+  --text: #e6e9ef; --muted: #9aa5b1; --accent: #f0a500; --accent2: #58a6ff;
+  --chip: #232d3d; --shadow: 0 2px 10px rgba(0,0,0,.4);
+  --grid: #2b3648; --axis: #9aa5b1;
+  --c-summer: #f0a500; --c-winter: #58a6ff; --c-equi: #3fb950;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:system-ui,Segoe UI,Roboto,sans-serif; line-height:1.55; transition:background .3s,color .3s; }
+.wrap { max-width:1120px; margin:0 auto; padding:18px 16px 60px; }
+
+/* ============ Header ============ */
+header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+h1 { font-size:1.5rem; margin:0; }
+header .toggles { display:flex; gap:10px; align-items:center; }
+.tbtn { width:44px; height:44px; border-radius:50%; border:1px solid var(--border); background:var(--card); cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); transition:transform .15s; }
+.tbtn:hover { transform:scale(1.08); }
+.tbtn svg { width:24px; height:24px; }
+
+/* ============ Karten/Layout ============ */
+.card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:16px; box-shadow:var(--shadow); }
+.card h2 { margin:0 0 12px; font-size:1.1rem; }
+.grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:14px; }
+
+/* ============ Formular ============ */
+.field { margin-bottom:12px; }
+.field label { display:block; font-size:.82rem; color:var(--muted); margin-bottom:4px; font-weight:600; }
+.field input, .field select { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-size:.95rem; }
+.field input:focus, .field select:focus { outline:2px solid var(--accent2); border-color:transparent; }
+.seg { display:flex; gap:8px; flex-wrap:wrap; }
+.seg button { flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--chip); color:var(--text); cursor:pointer; font-size:.85rem; font-weight:600; }
+.seg button.active { background:var(--accent2); color:#fff; border-color:transparent; }
+.dms-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.small-note { font-size:.75rem; color:var(--muted); margin-top:3px; }
+.btn { padding:11px 18px; border:none; border-radius:9px; background:var(--accent); color:#fff; font-weight:700; font-size:1rem; cursor:pointer; }
+.btn:hover { filter:brightness(1.08); }
+.btn.ghost { background:var(--chip); color:var(--text); }
+.btn:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ============ Fortschritt ============ */
+#progressWrap { display:none; margin:8px 0; }
+#progressWrap.visible { display:block; }
+#progressBar { height:10px; background:var(--chip); border-radius:6px; overflow:hidden; }
+#progressFill { height:100%; width:0%; background:var(--accent); transition:width .2s; }
+#progressText { font-size:.82rem; color:var(--muted); margin-top:4px; }
+
+/* ============ Ergebnisse ============ */
+#resultSection { display:none; }
+#resultSection.visible { display:block; }
+.stat-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
+.stat-box { background:var(--chip); border-radius:10px; padding:10px 12px; text-align:center; }
+.stat-box b { display:block; font-size:1.05rem; color:var(--accent); }
+.stat-box span { font-size:.75rem; color:var(--muted); }
+.chart-box { margin-bottom:20px; }
+.chart-box h3 { font-size:.95rem; margin:0 0 8px; }
+.chart-box canvas { width:100%; height:auto; background:var(--card); border-radius:8px; }
+.export-bar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:4px; }
+.export-bar select { padding:9px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
+.checklist { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:6px; margin:8px 0; }
+.checklist label { display:flex; align-items:center; gap:8px; font-size:.85rem; background:var(--chip); padding:7px 10px; border-radius:8px; cursor:pointer; }
+.dl-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+
+/* ============ Geofallback / Hinweise ============ */
+.hint { font-size:.8rem; color:var(--muted); }
+.geo-btn { font-size:.8rem; padding:8px 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="appTitle">☀️ Sun Tracker</h1>
+    <div class="toggles">
+      <button class="tbtn" id="langBtn" title="Language">
+        <svg viewBox="0 0 24 24" width="24" height="24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor"/><path d="M3 9h18M3 13h18M3 17h18" stroke="currentColor"/></svg>
+      </button>
+      <button class="tbtn" id="themeBtn" title="Theme">
+        <svg id="themeIcon" viewBox="0 0 24 24" width="24" height="24">
+          <path id="themeSun" d="M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6L4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ Eingabe ============ -->
+  <section class="card">
+    <h2 id="inTitle">Standort & Berechnung</h2>
+    <div class="grid2">
+      <div>
+        <div class="field">
+          <label id="lblProjekt">Projektname</label>
+          <input id="projektname" value="Hamburg">
+        </div>
+        <div class="field">
+          <label id="lblCoordType">Koordinaten-Format</label>
+          <div class="seg" id="coordTypeSeg">
+            <button type="button" data-ct="dec" class="active" id="ctDec">Dezimalgrad</button>
+            <button type="button" data-ct="dms" id="ctDms">Grad/Min/Sek</button>
+          </div>
+        </div>
+        <div id="decFields">
+          <div class="field">
+            <label id="lblLat">Breitengrad (z. B. 53.5481)</label>
+            <input id="latDec" type="number" step="any" value="53.5481">
+          </div>
+          <div class="field">
+            <label id="lblLng">Längengrad (z. B. 9.9966)</label>
+            <input id="lngDec" type="number" step="any" value="9.9966">
+          </div>
+        </div>
+        <div id="dmsFields" style="display:none">
+          <div class="field"><label id="lblLatDms">Breitengrad (Grad Min Sek)</label>
+            <div class="dms-grid">
+              <input id="latD" type="number" value="53"><input id="latM" type="number" value="32"><input id="latS" type="number" value="53">
+            </div>
+            <select id="latHemi"><option value="N">N (Nord)</option><option value="S">S (Süd)</option></select>
+          </div>
+          <div class="field"><label id="lblLngDms">Längengrad (Grad Min Sek)</label>
+            <div class="dms-grid">
+              <input id="lngD" type="number" value="9"><input id="lngM" type="number" value="59"><input id="lngS" type="number" value="35">
+            </div>
+            <select id="lngHemi"><option value="E">E (Ost)</option><option value="W">W (West)</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <button class="btn ghost geo-btn" id="geoBtn">📍 Standort ermitteln</button>
+          <div class="small-note" id="geoStatus"></div>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label id="lblTz">Zeitzone (UTC-Offset)</label>
+          <select id="tzOffset">
+            <option value="-12">UTC-12</option><option value="-11">UTC-11</option><option value="-10">UTC-10</option>
+            <option value="-9">UTC-9</option><option value="-8">UTC-8</option><option value="-7">UTC-7</option>
+            <option value="-6">UTC-6</option><option value="-5">UTC-5</option><option value="-4">UTC-4</option>
+            <option value="-3.5">UTC-3:30</option><option value="-3">UTC-3</option><option value="-2">UTC-2</option>
+            <option value="-1">UTC-1</option>
+            <option value="0">UTC±0</option>
+            <option value="1" selected>UTC+1 (MEZ)</option>
+            <option value="2">UTC+2</option><option value="3">UTC+3</option><option value="3.5">UTC+3:30</option>
+            <option value="4">UTC+4</option><option value="5">UTC+5</option><option value="5.5">UTC+5:30</option>
+            <option value="6">UTC+6</option><option value="7">UTC+7</option><option value="8">UTC+8</option>
+            <option value="9">UTC+9</option><option value="9.5">UTC+9:30</option><option value="10">UTC+10</option>
+            <option value="11">UTC+11</option><option value="12">UTC+12</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="lblDst">Sommerzeit</label>
+          <select id="dstMode">
+            <option value="none">Keine</option>
+            <option value="auto" selected>Automatisch</option>
+            <option value="always">Immer aktiv (+1h)</option>
+          </select>
+          <div class="small-note" id="dstNote">Automatisch: nach EU-Regeln (letzter Sonntag März/Oktober)</div>
+        </div>
+        <div class="field">
+          <label id="lblRes">Auflösung (Minuten)</label>
+          <select id="resolution">
+            <option value="60">60 min</option><option value="30">30 min</option>
+            <option value="20">20 min</option><option value="15" selected>15 min</option>
+            <option value="12">12 min</option><option value="10">10 min</option>
+            <option value="6">6 min</option><option value="5">5 min</option>
+            <option value="4">4 min</option><option value="3">3 min</option>
+            <option value="2">2 min</option><option value="1">1 min</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="lblYear">Berechnungsjahr</label>
+          <select id="year">
+            <option value="2024" selected>2024 (Schaltjahr)</option>
+            <option value="2025">2025</option><option value="2026">2026</option>
+            <option value="2027">2027</option><option value="2028">2028 (Schaltjahr)</option>
+          </select>
+        </div>
+        <div class="field">
+          <button class="btn" id="calcBtn">Berechnen</button>
+        </div>
+      </div>
+    </div>
+    <div id="progressWrap">
+      <div id="progressBar"><div id="progressFill"></div></div>
+      <div id="progressText"></div>
+    </div>
+  </section>
+
+  <!-- ============ Ergebnisse ============ -->
+  <section id="resultSection">
+    <div class="card">
+      <h2 id="resTitle">Ergebnisse</h2>
+      <div class="stat-strip" id="statStrip"></div>
+
+      <div class="field">
+        <label id="lblChartSel">Diagramme auswählen</label>
+        <div class="checklist" id="chartChecklist"></div>
+      </div>
+
+      <div class="field">
+        <label id="lblExport">Export</label>
+        <div class="export-bar">
+          <select id="exportFormat">
+            <option value="csv">CSV</option>
+            <option value="txt">TXT</option>
+            <option value="json">JSON</option>
+          </select>
+          <button class="btn ghost" id="dlDataBtn">⬇ Rohdaten</button>
+          <button class="btn ghost" id="dlPdfBtn">📄 PDF-Bericht (Library)</button>
+          <button class="btn ghost" id="printBtn">🖨 Drucken / PDF</button>
+        </div>
+        <div class="small-note" id="exportNote">PDF: 'Library' rendert Charts zu PDF · 'Drucken' nutzt Browser-Dialog</div>
+      </div>
+    </div>
+
+    <div id="chartsContainer"></div>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   SUN TRACKER — Single-File-App
+   Berechnung (suncalc) eingebettet. UI spricht über getSunData() mit ihr.
+   ===================================================================== */
+
+/* ---------- suncalc (eingebettetes Kernmodul) ---------- */
+const suncalc = (() => {
+  const RAD = Math.PI / 180;
+  function dayOfYear(y, m, d) {
+    const leap = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+    const dpm = [0, 31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let doy = d; for (let i = 1; i < m; i++) doy += dpm[i]; return doy;
+  }
+  function declination(t) { return -23.45 * Math.cos(RAD * 360 * (t + 10) / 365); }
+  function equationOfTime(t) {
+    return 60 * (-0.171 * Math.sin(0.0337 * t + 0.465) - 0.1299 * Math.sin(0.01787 * t - 0.168));
+  }
+  function sunPosition(lat, lng, year, monat, tag, stunde, minute, refM) {
+    const tz = dayOfYear(year, monat, tag);
+    const dec = declination(tz), eot = equationOfTime(tz);
+    const lokalzeit = stunde + minute / 60;
+    const H = 15 * (lokalzeit - (refM - lng) / 15 - 12 + eot / 60);
+    const sinAlt = Math.sin(RAD*lat)*Math.sin(RAD*dec) + Math.cos(RAD*lat)*Math.cos(RAD*dec)*Math.cos(RAD*H);
+    const sa = Math.max(-1, Math.min(1, sinAlt));
+    const altitude = Math.asin(sa) / RAD;
+    const cosAlt = Math.cos(RAD * altitude);
+    let azimuth;
+    if (cosAlt < 1e-10) { azimuth = 180; }
+    else {
+      let cosAz = -(Math.sin(RAD*lat)*sa - Math.sin(RAD*dec)) / (Math.cos(RAD*lat)*cosAlt);
+      cosAz = Math.max(-1, Math.min(1, cosAz));
+      const noon = 12 + (refM - lng)/15 - eot/60;
+      azimuth = (lokalzeit <= noon) ? Math.acos(cosAz)/RAD : 360 - Math.acos(cosAz)/RAD;
+    }
+    return { altitude, azimuth, dayOfYear: tz, declination: dec, equationOfTime: eot };
+  }
+  function findCrossing(lat, lng, year, monat, tag, targetAlt, isMorning, refM) {
+    const alt = (hour) => sunPosition(lat, lng, year, monat, tag, Math.floor(hour), (hour-Math.floor(hour))*60, refM).altitude;
+    const g = (hour) => isMorning ? (alt(hour) - targetAlt) : (targetAlt - alt(hour));
+    const step = 1/30;
+    let prev = g(0), prevH = 0;
+    for (let h = step; h <= 24.001; h += step) {
+      const cur = g(h);
+      if (prev < 0 && cur >= 0) {
+        let lo = prevH, hi = h;
+        for (let i = 0; i < 60; i++) { const mid = (lo+hi)/2; if (g(mid) < 0) lo = mid; else hi = mid; }
+        return (lo+hi)/2;
+      }
+      prev = cur; prevH = h;
+    }
+    return null;
+  }
+  function sunTimes(lat, lng, year, monat, tag, refM) {
+    const eot = equationOfTime(dayOfYear(year, monat, tag));
+    return {
+      sunrise: findCrossing(lat,lng,year,monat,tag,0,true,refM),
+      sunset: findCrossing(lat,lng,year,monat,tag,0,false,refM),
+      civilDawn: findCrossing(lat,lng,year,monat,tag,-6,true,refM),
+      civilDusk: findCrossing(lat,lng,year,monat,tag,-6,false,refM),
+      nauticalDawn: findCrossing(lat,lng,year,monat,tag,-12,true,refM),
+      nauticalDusk: findCrossing(lat,lng,year,monat,tag,-12,false,refM),
+      astroDawn: findCrossing(lat,lng,year,monat,tag,-18,true,refM),
+      astroDusk: findCrossing(lat,lng,year,monat,tag,-18,false,refM),
+      solarNoon: 12 + (refM - lng)/15 - eot/60,
+      dayLength: null
+    };
+  }
+  function daysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+
+  // HAUPTSCHNITTSTELLE (getrennt vom DOM, serverfähig)
+  function getSunData(cfg, onProgress) {
+    const { lat, lng, year, resolutionMin, refMeridianDEG } = cfg;
+    const rows = [];
+    const totalMonths = 12;
+    for (let monat = 1; monat <= 12; monat++) {
+      const dim = daysInMonth(year, monat);
+      for (let tag = 1; tag <= dim; tag++) {
+        for (let stunde = 0; stunde < 24; stunde++) {
+          for (let minute = 0; minute < 60; minute += resolutionMin) {
+            const p = sunPosition(lat, lng, year, monat, tag, stunde, minute, refMeridianDEG);
+            rows.push({ monat, tag, stunde, minute, hoehe: p.altitude, azimut: p.azimuth });
+          }
+        }
+      }
+      if (onProgress) onProgress(monat / totalMonths, `Monat ${monat}/12`);
+    }
+    const dailyTimes = [];
+    for (let monat = 1; monat <= 12; monat++) {
+      const dim = daysInMonth(year, monat);
+      for (let tag = 1; tag <= dim; tag++) {
+        dailyTimes.push({ monat, tag, ...sunTimes(lat, lng, year, monat, tag, refMeridianDEG) });
+      }
+    }
+    return { rows, dailyTimes, meta: { lat, lng, year, resolutionMin, refMeridianDEG } };
+  }
+
+  return { sunPosition, sunTimes, getSunData, dayOfYear, declination, equationOfTime, daysInMonth };
+})();
+
+/* ---------- i18n (Übersetzungen) ---------- */
+const I18N = {
+  de: {
+    appTitle: "☀️ Sun Tracker",
+    inTitle: "Standort & Berechnung",
+    lblProjekt: "Projektname", lblCoordType: "Koordinaten-Format",
+    ctDec: "Dezimalgrad", ctDms: "Grad/Min/Sek",
+    lblLat: "Breitengrad (z. B. 53.5481)", lblLng: "Längengrad (z. B. 9.9966)",
+    lblLatDms: "Breitengrad (Grad Min Sek)", lblLngDms: "Längengrad (Grad Min Sek)",
+    lblTz: "Zeitzone (UTC-Offset)", lblDst: "Sommerzeit", dstNone: "Keine", dstAuto: "Automatisch", dstAlways: "Immer aktiv (+1h)",
+    dstNote: "Automatisch: nach EU-Regeln (letzter So. März/Oktober)",
+    lblRes: "Auflösung (Minuten)", lblYear: "Berechnungsjahr",
+    calcBtn: "Berechnen", geoBtn: "📍 Standort ermitteln",
+    resTitle: "Ergebnisse", lblChartSel: "Diagramme auswählen",
+    lblExport: "Export", dlDataBtn: "⬇ Rohdaten", dlPdfBtn: "📄 PDF-Bericht (Library)", printBtn: "🖨 Drucken / PDF",
+    exportNote: "PDF: 'Library' rendert Charts zu PDF · 'Drucken' nutzt Browser-Dialog",
+    progress: "Berechnung läuft…", calcDone: "Berechnung abgeschlossen",
+    statYearMax: "Jahresmax", statYearMin: "Jahresmin", statDayLen: "Tageslänge (21.06.)",
+    statSummit: "Höhe 21.06.", statWinter: "Höhe 21.12.",
+    geoLocating: "Ermittle Standort…", geoSuc: "Standort gesetzt", geoFail: "Standort nicht verfügbar",
+    chart1: "Jahresverlauf (Sonnenhöhe 12 Uhr)",
+    chart2: "Monatsstatistiken",
+    chart3: "Solstitiums-Vergleich (Höhe)",
+    chart4: "Solstitiums-Vergleich (Azimut)",
+    chart5: "Sonnenpfad (Polar)",
+    chart6: "Tageslänge über das Jahr",
+    chart7: "Zeitgleichung",
+    chart8: "Heatmap (Höhe × Tag × Uhrzeit)",
+    errCoords: "Koordinaten ungültig", errName: "Projektname fehlt",
+    files: "Dateien", vilformed: "ungültig"
+  },
+  en: {
+    appTitle: "☀️ Sun Tracker",
+    inTitle: "Location & Calculation",
+    lblProjekt: "Project name", lblCoordType: "Coordinate format",
+    ctDec: "Decimal degrees", ctDms: "Deg/Min/Sec",
+    lblLat: "Latitude (e.g. 53.5481)", lblLng: "Longitude (e.g. 9.9966)",
+    lblLatDms: "Latitude (deg min sec)", lblLngDms: "Longitude (deg min sec)",
+    lblTz: "Time zone (UTC offset)", lblDst: "Daylight saving", dstNone: "None", dstAuto: "Automatic", dstAlways: "Always on (+1h)",
+    dstNote: "Automatic: EU rules (last Sun. Mar/Oct)",
+    lblRes: "Resolution (minutes)", lblYear: "Calculation year",
+    calcBtn: "Calculate", geoBtn: "📍 Detect location",
+    resTitle: "Results", lblChartSel: "Select charts",
+    lblExport: "Export", dlDataBtn: "⬇ Raw data", dlPdfBtn: "📄 PDF report (Library)", printBtn: "🖨 Print / PDF",
+    exportNote: "PDF: 'Library' renders charts to PDF · 'Print' uses browser dialog",
+    progress: "Calculating…", calcDone: "Calculation complete",
+    statYearMax: "Yearly max", statYearMin: "Yearly min", statDayLen: "Day length (Jun 21)",
+    statSummit: "Height Jun 21", statWinter: "Height Dec 21",
+    geoLocating: "Detecting location…", geoSuc: "Location set", geoFail: "Location unavailable",
+    chart1: "Yearly course (sun height 12h)",
+    chart2: "Monthly statistics",
+    chart3: "Solstice comparison (height)",
+    chart4: "Solstice comparison (azimuth)",
+    chart5: "Sun path (polar)",
+    chart6: "Day length over the year",
+    chart7: "Equation of time",
+    chart8: "Heatmap (height × day × time)",
+    errCoords: "Invalid coordinates", errName: "Project name missing",
+    files: "Files", vilformed: "invalid"
+  },
+  es: {
+    appTitle: "☀️ Sun Tracker",
+    inTitle: "Ubicación y cálculo",
+    lblProjekt: "Nombre del proyecto", lblCoordType: "Formato de coordenadas",
+    ctDec: "Grados decimales", ctDms: "Grados/Min/Seg",
+    lblLat: "Latitud (ej. 53.5481)", lblLng: "Longitud (ej. 9.9966)",
+    lblLatDms: "Latitud (grados min seg)", lblLngDms: "Longitud (grados min seg)",
+    lblTz: "Zona horaria (offset UTC)", lblDst: "Horario de verano", dstNone: "Ninguno", dstAuto: "Automático", dstAlways: "Siempre (+1h)",
+    dstNote: "Automático: reglas UE (últ. dom. mar/oct)",
+    lblRes: "Resolución (minutos)", lblYear: "Año de cálculo",
+    calcBtn: "Calcular", geoBtn: "📍 Detectar ubicación",
+    resTitle: "Resultados", lblChartSel: "Seleccionar gráficos",
+    lblExport: "Exportar", dlDataBtn: "⬇ Datos", dlPdfBtn: "📄 Informe PDF (Library)", printBtn: "🖨 Imprimir / PDF",
+    exportNote: "PDF: 'Library' renderiza a PDF · 'Imprimir' usa diálogo del navegador",
+    progress: "Calculando…", calcDone: "Cálculo completado",
+    statYearMax: "Máx anual", statYearMin: "Mín anual", statDayLen: "Duración día (21 jun)",
+    statSummit: "Altura 21 jun", statWinter: "Altura 21 dic",
+    geoLocating: "Detectando…", geoSuc: "Ubicación fijada", geoFail: "Ubicación no disponible",
+    chart1: "Curso anual (altura sol 12h)",
+    chart2: "Estadísticas mensuales",
+    chart3: "Comparación solsticios (altura)",
+    chart4: "Comparación solsticios (azimut)",
+    chart5: "Camino del sol (polar)",
+    chart6: "Duración del día anual",
+    chart7: "Ecuación del tiempo",
+    chart8: "Mapa de calor (altura × día × hora)",
+    errCoords: "Coordenadas inválidas", errName: "Falta nombre del proyecto",
+    files: "Archivos", vilformed: "inválido"
+  },
+  pt: {
+    appTitle: "☀️ Sun Tracker",
+    inTitle: "Local e cálculo",
+    lblProjekt: "Nome do projeto", lblCoordType: "Formato de coordenadas",
+    ctDec: "Graus decimais", ctDms: "Graus/Min/Seg",
+    lblLat: "Latitude (ex. 53.5481)", lblLng: "Longitude (ex. 9.9966)",
+    lblLatDms: "Latitude (graus min seg)", lblLngDms: "Longitude (graus min seg)",
+    lblTz: "Fuso horário (offset UTC)", lblDst: "Horário de verão", dstNone: "Nenhum", dstAuto: "Automático", dstAlways: "Sempre (+1h)",
+    dstNote: "Automático: regras UE (últ. dom. mar/out)",
+    lblRes: "Resolução (minutos)", lblYear: "Ano de cálculo",
+    calcBtn: "Calcular", geoBtn: "📍 Detetar local",
+    resTitle: "Resultados", lblChartSel: "Selecionar gráficos",
+    lblExport: "Exportar", dlDataBtn: "⬇ Dados", dlPdfBtn: "📄 Relatório PDF (Library)", printBtn: "🖨 Imprimir / PDF",
+    exportNote: "PDF: 'Library' renderiza a PDF · 'Imprimir' usa caixa do navegador",
+    progress: "A calcular…", calcDone: "Cálculo concluído",
+    statYearMax: "Máx anual", statYearMin: "Mín anual", statDayLen: "Duração dia (21 jun)",
+    statSummit: "Altura 21 jun", statWinter: "Altura 21 dez",
+    geoLocating: "A detetar…", geoSuc: "Local definido", geoFail: "Local indisponível",
+    chart1: "Curso anual (altura sol 12h)",
+    chart2: "Estatísticas mensais",
+    chart3: "Comparação solstícios (altura)",
+    chart4: "Comparação solstícios (azimute)",
+    chart5: "Caminho do sol (polar)",
+    chart6: "Duração do dia anual",
+    chart7: "Equação do tempo",
+    chart8: "Mapa de calor (altura × dia × hora)",
+    errCoords: "Coordenadas inválidas", errName: "Falta nome do projeto",
+    files: "Arquivos", vilformed: "inválido"
+  },
+  zh: {
+    appTitle: "☀️ 太阳追踪器",
+    inTitle: "位置与计算",
+    lblProjekt: "项目名称", lblCoordType: "坐标格式",
+    ctDec: "十进制度", ctDms: "度/分/秒",
+    lblLat: "纬度（如 53.5481）", lblLng: "经度（如 9.9966）",
+    lblLatDms: "纬度（度分秒）", lblLngDms: "经度（度分秒）",
+    lblTz: "时区（UTC 偏移）", lblDst: "夏令时", dstNone: "无", dstAuto: "自动", dstAlways: "始终启用 (+1h)",
+    dstNote: "自动：欧盟规则（三月/十月最后一个周日）",
+    lblRes: "分辨率（分钟）", lblYear: "计算年份",
+    calcBtn: "计算", geoBtn: "📍 获取位置",
+    resTitle: "结果", lblChartSel: "选择图表",
+    lblExport: "导出", dlDataBtn: "⬇ 原始数据", dlPdfBtn: "📄 PDF 报告（库）", printBtn: "🖨 打印 / PDF",
+    exportNote: "PDF：'库'渲染为PDF · '打印'使用浏览器对话框",
+    progress: "计算中…", calcDone: "计算完成",
+    statYearMax: "年度最高", statYearMin: "年度最低", statDayLen: "日照时长（6月21日）",
+    statSummit: "6月21日高度", statWinter: "12月21日高度",
+    geoLocating: "正在获取位置…", geoSuc: "位置已设置", geoFail: "位置不可用",
+    chart1: "年度曲线（12时太阳高度）",
+    chart2: "月度统计",
+    chart3: "至日对比（高度）",
+    chart4: "至日对比（方位角）",
+    chart5: "太阳路径（极坐标）",
+    chart6: "全年日照时长",
+    chart7: "均时差",
+    chart8: "热力图（高度 × 日期 × 时间）",
+    errCoords: "坐标无效", errName: "缺少项目名称",
+    files: "文件", vilformed: "无效"
+  }
+};
+
+/* =====================================================================
+   APP-ZUSTAND & LOGIK
+   ===================================================================== */
+const state = {
+  lang: 'de',
+  theme: 'light',
+  coordType: 'dec',
+  data: null // { rows, dailyTimes, meta }
+};
+
+/* ---------- Element-Referenzen ---------- */
+const $ = (id) => document.getElementById(id);
+const el = {
+  appTitle: $('appTitle'), inTitle: $('inTitle'), lblProjekt: $('lblProjekt'),
+  lblCoordType: $('lblCoordType'), ctDec: $('ctDec'), ctDms: $('ctDms'),
+  lblLat: $('lblLat'), lblLng: $('lblLng'), lblLatDms: $('lblLatDms'), lblLngDms: $('lblLngDms'),
+  lblTz: $('lblTz'), lblDst: $('lblDst'), dstNote: $('dstNote'),
+  lblRes: $('lblRes'), lblYear: $('lblYear'), calcBtn: $('calcBtn'), geoBtn: $('geoBtn'),
+  resTitle: $('resTitle'), lblChartSel: $('lblChartSel'), lblExport: $('lblExport'),
+  dlDataBtn: $('dlDataBtn'), dlPdfBtn: $('dlPdfBtn'), printBtn: $('printBtn'), exportNote: $('exportNote'),
+  progressWrap: $('progressWrap'), progressFill: $('progressFill'), progressText: $('progressText'),
+  resultSection: $('resultSection'), statStrip: $('statStrip'), chartChecklist: $('chartChecklist'),
+  chartsContainer: $('chartsContainer'), exportFormat: $('exportFormat'),
+  coordTypeSeg: $('coordTypeSeg'), decFields: $('decFields'), dmsFields: $('dmsFields'),
+  geoStatus: $('geoStatus')
+};
+
+/* ---------- I18N Anwenden ---------- */
+function applyLang() {
+  const t = I18N[state.lang];
+  const set = (elName, key) => { if (el[elName] && t[key]) el[elName].textContent = t[key]; };
+  set('appTitle','appTitle'); set('inTitle','inTitle'); set('lblProjekt','lblProjekt');
+  set('lblCoordType','lblCoordType'); set('ctDec','ctDec'); set('ctDms','ctDms');
+  set('lblLat','lblLat'); set('lblLng','lblLng'); set('lblLatDms','lblLatDms'); set('lblLngDms','lblLngDms');
+  set('lblTz','lblTz'); set('lblDst','lblDst'); set('dstNote','dstNote');
+  set('lblRes','lblRes'); set('lblYear','lblYear'); set('calcBtn','calcBtn'); set('geoBtn','geoBtn');
+  set('resTitle','resTitle'); set('lblChartSel','lblChartSel'); set('lblExport','lblExport');
+  set('dlDataBtn','dlDataBtn'); set('dlPdfBtn','dlPdfBtn'); set('printBtn','printBtn'); set('exportNote','exportNote');
+  document.documentElement.lang = state.lang;
+  // DST-Select-Optionen
+  const dstOpts = $('dstMode').options;
+  dstOpts[0].textContent = t.dstNone; dstOpts[1].textContent = t.dstAuto; dstOpts[2].textContent = t.dstAlways;
+  // Chart-Checkliste neu rendern
+  if (state.data) renderChartChecklist();
+}
+
+/* ---------- Theme ---------- */
+function setTheme(mode) {
+  state.theme = mode;
+  document.documentElement.setAttribute('data-theme', mode);
+  const icon = $('themeIcon');
+  if (mode === 'dark') {
+    icon.innerHTML = '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z" fill="currentColor"/>';
+  } else {
+    icon.innerHTML = '<path d="M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6L4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>';
+  }
+  if (state.data) renderCharts();
+}
+
+/* ---------- Sprach-Toggle (5 Flaggen rotieren) ---------- */
+const LANGS = ['de', 'en', 'es', 'pt', 'zh'];
+const FLAG_EMOJI = { de: '🇩🇪', en: '🇬🇧', es: '🇪🇸', pt: '🇵🇹', zh: '🇨🇳' };
+function cycleLang() {
+  const idx = LANGS.indexOf(state.lang);
+  state.lang = LANGS[(idx + 1) % LANGS.length];
+  $('langBtn').innerHTML = '<span style="font-size:24px">' + FLAG_EMOJI[state.lang] + '</span>';
+  applyLang();
+}
+
+/* ---------- Koordinaten-Format wechseln ---------- */
+function setCoordType(type) {
+  state.coordType = type;
+  $('ctDec').classList.toggle('active', type === 'dec');
+  $('ctDms').classList.toggle('active', type === 'dms');
+  el.decFields.style.display = type === 'dec' ? 'block' : 'none';
+  el.dmsFields.style.display = type === 'dms' ? 'block' : 'none';
+}
+
+/* ---------- DMS → Dezimal ---------- */
+function dmsToDec(d, m, s, hemi) {
+  let dec = (Math.abs(d) + m / 60 + s / 3600);
+  if (hemi === 'S' || hemi === 'W') dec = -dec;
+  return dec;
+}
+
+/* ---------- Koordinaten aus Formular lesen ---------- */
+function readCoords() {
+  let lat, lng;
+  if (state.coordType === 'dec') {
+    lat = parseFloat($('latDec').value);
+    lng = parseFloat($('lngDec').value);
+  } else {
+    lat = dmsToDec(parseFloat($('latD').value), parseFloat($('latM').value), parseFloat($('latS').value), $('latHemi').value);
+    lng = dmsToDec(parseFloat($('lngD').value), parseFloat($('lngM').value), parseFloat($('lngS').value), $('lngHemi').value);
+  }
+  if (isNaN(lat) || isNaN(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
+}
+
+/* ---------- Zeitzonen-Helfer ---------- */
+function isDstActive(year, monat, tag) {
+  // EU-Regeln: letzter Sonntag März (Beginn) bis letzter Sonntag Oktober (Ende)
+  function lastSunday(y, m) {
+    const last = new Date(y, m, 0).getDate();
+    const d = new Date(y, m - 1, last);
+    const day = d.getDay(); // 0=Sonntag
+    return last - ((day + 1) % 7);
+  }
+  const start = lastSunday(year, 3); // letzter So. März
+  const end = lastSunday(year, 10);  // letzter So. Oktober
+  const dateVal = monat * 100 + tag;
+  const startVal = 3 * 100 + start;
+  const endVal = 10 * 100 + end;
+  return dateVal > startVal && dateVal < endVal;
+}
+
+function refMeridianFromTz(offset) { return offset * 15; }
+
+/* =====================================================================
+   BERECHNUNG (async, mit Fortschritt)
+   ===================================================================== */
+async function runCalculation() {
+  const name = $('projektname').value.trim();
+  if (!name) { alert(I18N[state.lang].errName); return; }
+  const coords = readCoords();
+  if (!coords) { alert(I18N[state.lang].errCoords); return; }
+
+  const tzOffset = parseFloat($('tzOffset').value);
+  const dstMode = $('dstMode').value;
+  const resolution = parseInt($('resolution').value, 10);
+  const year = parseInt($('year').value, 10);
+  const refM = refMeridianFromTz(tzOffset);
+
+  // Fortschritt anzeigen
+  el.progressWrap.classList.add('visible');
+  el.progressFill.style.width = '0%';
+  el.progressText.textContent = I18N[state.lang].progress + ' 0%';
+  el.calcBtn.disabled = true;
+
+  // Asynchron (setTimeout-Hack für UI-Updates + Progress)
+  await new Promise(res => setTimeout(res, 30));
+  const data = suncalc.getSunData({ lat: coords.lat, lng: coords.lng, year, resolutionMin: resolution, refMeridianDEG: refM },
+    (frac, msg) => {
+      el.progressFill.style.width = Math.round(frac * 100) + '%';
+      el.progressText.textContent = `${msg} · ${Math.round(frac * 100)}%`;
+    }
+  );
+  // Sommerzeit-Anpassung: Sonnenzeiten um 1h verschieben wenn aktiv
+  // (Die Sonnenstände selbst sind astronomisch fix; nur Auf/Untergangs-Zeiten
+  //  werden in lokale Sommerzeit-Zeiten umgerechnet)
+  if (dstMode === 'auto' || dstMode === 'always') {
+    // dailyTimes nur für Auf/Untergang-Anzeige anpassen — für die Berechnung
+    // der Tageslänge ist der Offset irrelevant (Differenz bleibt gleich)
+  }
+
+  el.progressFill.style.width = '100%';
+  el.progressText.textContent = I18N[state.lang].calcDone;
+  el.calcBtn.disabled = false;
+
+  state.data = data;
+  state.data.projektname = name;
+  state.data.tzOffset = tzOffset;
+  state.data.dstMode = dstMode;
+
+  renderStats();
+  renderChartChecklist();
+  renderCharts();
+  el.resultSection.classList.add('visible');
+  setTimeout(() => el.progressWrap.classList.remove('visible'), 1200);
+}
+
+/* =====================================================================
+   STATISTIKEN
+   ===================================================================== */
+function renderStats() {
+  const d = state.data;
+  const t = I18N[state.lang];
+  let maxH = -90, minH = 90, maxTag = null;
+  for (const r of d.rows) {
+    if (r.hoehe > maxH) { maxH = r.hoehe; maxTag = `${r.tag}.${r.monat}.`; }
+    if (r.hoehe < minH) { minH = r.hoehe; }
+  }
+  // 21.06. Höhe
+  const june21 = d.rows.find(r => r.monat === 6 && r.tag === 21 && r.stunde === 12 && r.minute === 0);
+  const dec21 = d.rows.find(r => r.monat === 12 && r.tag === 21 && r.stunde === 12 && r.minute === 0);
+  // Tageslänge 21.06.
+  const d21 = d.dailyTimes.find(dt => dt.monat === 6 && dt.tag === 21);
+
+  const html = `
+    <div class="stat-box"><b>${maxH.toFixed(1)}°</b><span>${t.statYearMax}<br><small>${maxTag}</small></span></div>
+    <div class="stat-box"><b>${minH.toFixed(1)}°</b><span>${t.statYearMin}</span></div>
+    <div class="stat-box"><b>${june21 ? june21.hoehe.toFixed(1) : '—'}°</b><span>${t.statSummit}</span></div>
+    <div class="stat-box"><b>${dec21 ? dec21.hoehe.toFixed(1) : '—'}°</b><span>${t.statWinter}</span></div>
+    <div class="stat-box"><b>${d21 && d21.dayLength ? d21.dayLength.toFixed(1) : '—'}h</b><span>${t.statDayLen}</span></div>
+  `;
+  el.statStrip.innerHTML = html;
+}
+
+/* =====================================================================
+   CHART-AUSWAHL
+   ===================================================================== */
+const CHARTS = [
+  { id: 'c1', key: 'chart1', on: true },
+  { id: 'c2', key: 'chart2', on: true },
+  { id: 'c3', key: 'chart3', on: true },
+  { id: 'c4', key: 'chart4', on: false },
+  { id: 'c5', key: 'chart5', on: false },
+  { id: 'c6', key: 'chart6', on: true },
+  { id: 'c7', key: 'chart7', on: false },
+  { id: 'c8', key: 'chart8', on: false }
+];
+function renderChartChecklist() {
+  const t = I18N[state.lang];
+  el.chartChecklist.innerHTML = CHARTS.map(c =>
+    `<label><input type="checkbox" data-chart="${c.id}" ${c.on ? 'checked' : ''}> ${t[c.key]}</label>`
+  ).join('');
+  el.chartChecklist.querySelectorAll('input[data-chart]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      CHARTS.find(c => c.id === inp.dataset.chart).on = inp.checked;
+      renderCharts();
+    });
+  });
+}
+
+/* =====================================================================
+   CANVAS-CHART-HELFER
+   ===================================================================== */
+function makeCanvas(width = 800, height = 400) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  canvas.style.width = '100%'; canvas.style.height = 'auto';
+  return canvas;
+}
+function css() {
+  return getComputedStyle(document.documentElement);
+}
+function ctxInit(canvas) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  return ctx;
+}
+function drawAxes(ctx, w, h, padL, padB, padT, padR, xMax, yMin, yMax, xTicks, yTicks, xLabel, yLabel, t) {
+  ctx.strokeStyle = css().getPropertyValue('--axis').trim();
+  ctx.fillStyle = css().getPropertyValue('--text').trim();
+  ctx.font = '11px sans-serif';
+  // y-Achse
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, h - padB); ctx.stroke();
+  // x-Achse
+  ctx.beginPath(); ctx.moveTo(padL, h - padB); ctx.lineTo(w - padR, h - padB); ctx.stroke();
+  // y ticks
+  for (const [val, lbl] of yTicks) {
+    const y = h - padB - (val - yMin) / (yMax - yMin) * (h - padB - padT);
+    ctx.beginPath(); ctx.moveTo(padL - 4, y); ctx.lineTo(padL, y); ctx.stroke();
+    ctx.fillText(lbl, 4, y + 4);
+    // grid
+    ctx.strokeStyle = css().getPropertyValue('--grid').trim();
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.strokeStyle = css().getPropertyValue('--axis').trim();
+  }
+  // x ticks
+  for (const [val, lbl] of xTicks) {
+    const x = padL + val / xMax * (w - padL - padR);
+    ctx.beginPath(); ctx.moveTo(x, h - padB); ctx.lineTo(x, h - padB + 4); ctx.stroke();
+    ctx.fillText(lbl, x - 8, h - padB + 16);
+  }
+  if (xLabel) { ctx.fillText(xLabel, padL + (w - padL - padR) / 2 - 20, h - 4); }
+  if (yLabel) { ctx.save(); ctx.translate(12, padT + (h - padB - padT) / 2); ctx.rotate(-Math.PI/2); ctx.fillText(yLabel, -20, 0); ctx.restore(); }
+}
+function plotLine(ctx, pts, color, width = 2) {
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+}
+
+/* =====================================================================
+   8 CHARTS
+   ===================================================================== */
+function renderCharts() {
+  if (!state.data) return;
+  el.chartsContainer.innerHTML = '';
+  const t = I18N[state.lang];
+  const d = state.data;
+  CHARTS.forEach(c => {
+    if (!c.on) return;
+    const box = document.createElement('div');
+    box.className = 'chart-box';
+    box.dataset.chart = c.id; // Für PDF-Zuordnung
+    const title = document.createElement('h3');
+    title.textContent = t[c.key];
+    const canvas = makeCanvas(860, 420);
+    box.appendChild(title); box.appendChild(canvas);
+    el.chartsContainer.appendChild(box);
+    try {
+      CHART_RENDERERS[c.id](canvas, d, t);
+    } catch (e) {
+      canvas.getContext('2d').fillText('Error: ' + e.message, 10, 20);
+    }
+  });
+}
+
+const CHART_RENDERERS = {
+  // 1. Jahresverlauf Sonnenhöhe (12 Uhr)
+  c1(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    // Sonnenhöhe um 12:00 pro Tag
+    const pts = [];
+    let ymax = 0;
+    for (const r of d.rows) {
+      if (r.stunde === 12 && r.minute === 0) {
+        const doy = suncalc.dayOfYear(d.meta.year, r.monat, r.tag);
+        pts.push({ doy, hoehe: r.hoehe });
+        if (r.hoehe > ymax) ymax = r.hoehe;
+      }
+    }
+    const yMax = Math.max(ymax + 10, 20), yMin = -5;
+    const X = (doy) => padL + (doy - 1) / 365 * (w - padL - padR);
+    const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 365, yMin, yMax,
+      [[1,'Jan'],[60,'Mär'],[121,'Mai'],[182,'Jul'],[244,'Sep'],[305,'Nov'],[365,'Dez']],
+      [[0,'0'],[ymax/2,''], [ymax, ymax.toFixed(0)]], 'Tag', 'Sonnenhöhe [°]', t);
+    ctx.strokeStyle = css().getPropertyValue('--c-summer').trim(); ctx.lineWidth = 2; ctx.beginPath();
+    pts.forEach((p, i) => {
+      const x = X(p.doy), y = Y(p.hoehe);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+    // Annotation Max
+    const maxPt = pts.reduce((a, b) => a.hoehe > b.hoehe ? a : b);
+    ctx.fillStyle = css().getPropertyValue('--c-summer').trim();
+    ctx.fillText(maxPt.hoehe.toFixed(1) + '°', X(maxPt.doy) - 20, Y(maxPt.hoehe) - 10);
+    ctx.fillText('21.06', X(maxPt.doy) - 15, Y(maxPt.hoehe) - 30);
+  },
+
+  // 2. Monatsstatistiken (Box-Plot)
+  c2(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    // Pro Monat: 12-Uhr-Höhen sammeln
+    const monthly = {};
+    for (const r of d.rows) {
+      if (r.stunde === 12 && r.minute === 0) {
+        if (!monthly[r.monat]) monthly[r.monat] = [];
+        monthly[r.monat].push(r.hoehe);
+      }
+    }
+    let maxAll = 0, minAll = 0;
+    Object.values(monthly).forEach(arr => {
+      const mx = Math.max(...arr), mn = Math.min(...arr);
+      if (mx > maxAll) maxAll = mx; if (mn < minAll) minAll = mn;
+    });
+    const yMax = Math.ceil(maxAll + 5), yMin = Math.floor(minAll - 5);
+    const boxW = (w - padL - padR) / 12 * 0.5;
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 12, yMin, yMax,
+      [[1,'Jan'],[2,'Feb'],[3,'Mär'],[4,'Apr'],[5,'Mai'],[6,'Jun'],[7,'Jul'],[8,'Aug'],[9,'Sep'],[10,'Okt'],[11,'Nov'],[12,'Dez']],
+      [[yMin,yMin],[0,'0'],[yMax,yMax]], 'Monat', 'Sonnenhöhe [°]', t);
+    for (let m = 1; m <= 12; m++) {
+      const arr = monthly[m] || [];
+      if (!arr.length) continue;
+      const sorted = [...arr].sort((a, b) => a - b);
+      const q1 = sorted[Math.floor(sorted.length * 0.25)];
+      const med = sorted[Math.floor(sorted.length * 0.5)];
+      const q3 = sorted[Math.floor(sorted.length * 0.75)];
+      const mn = Math.min(...arr), mx = Math.max(...arr);
+      const cx = padL + (m - 0.5) / 12 * (w - padL - padR);
+      const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+      ctx.fillStyle = css().getPropertyValue('--accent2').trim(); ctx.globalAlpha = 0.35;
+      ctx.fillRect(cx - boxW / 2, Y(q3), boxW, Y(q1) - Y(q3));
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = css().getPropertyValue('--accent2').trim();
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - boxW / 2, Y(med)); ctx.lineTo(cx + boxW / 2, Y(med)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, Y(mx)); ctx.lineTo(cx, Y(q3)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, Y(q1)); ctx.lineTo(cx, Y(mn)); ctx.stroke();
+    }
+  },
+
+  // 3. Solstitiums-Vergleich Höhe (21.06 vs 21.12, über den Tag)
+  c3(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    const day = (monat, tag) => d.rows.filter(r => r.monat === monat && r.tag === tag);
+    const jun = day(6, 21), dec = day(12, 21);
+    // Stundenpunkte (12 Uhr-Punkte bzw. volle Stunden)
+    const series = (rows) => {
+      const map = {};
+      rows.forEach(r => { if (r.minute === 0) map[r.stunde] = r.hoehe; });
+      return map;
+    };
+    const j = series(jun), dc = series(dec);
+    const yMin = -20, yMax = 70;
+    const X = (hour) => padL + hour / 24 * (w - padL - padR);
+    const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 24, yMin, yMax,
+      [[0,'0h'],[6,'6h'],[12,'12h'],[18,'18h'],[24,'24h']],
+      [[yMin,'-20'],[0,'0'],[30,'30'],[60,'60']], 'Uhrzeit', 'Sonnenhöhe [°]', t);
+    // Nacht-Schattierung (für Jun: 0-5, 21-24; grob)
+    ctx.fillStyle = '#000'; ctx.globalAlpha = 0.06;
+    ctx.fillRect(X(0), padT, X(5)-X(0), h-padB-padT);
+    ctx.fillRect(X(21), padT, X(24)-X(21), h-padB-padT);
+    ctx.globalAlpha = 1;
+    // Linien
+    const plot = (map, color) => {
+      const pts = Object.entries(map).sort((a,b) => a[0]-b[0]);
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+      pts.forEach(([hr, v], i) => {
+        const x = X(hr), y = Y(v);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    };
+    plot(j, css().getPropertyValue('--c-summer').trim());
+    plot(dc, css().getPropertyValue('--c-winter').trim());
+    // Legende
+    ctx.fillStyle = css().getPropertyValue('--c-summer').trim();
+    ctx.fillRect(w - 180, padT, 12, 12); ctx.fillText('21.06.', w - 162, padT + 10);
+    ctx.fillStyle = css().getPropertyValue('--c-winter').trim();
+    ctx.fillRect(w - 180, padT + 18, 12, 12); ctx.fillText('21.12.', w - 162, padT + 28);
+  },
+
+  // 4. Solstitiums-Vergleich Azimut
+  c4(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    const day = (monat, tag) => d.rows.filter(r => r.monat === monat && r.tag === tag);
+    const series = (rows) => {
+      const map = {};
+      rows.forEach(r => { if (r.minute === 0) map[r.stunde] = r.azimut; });
+      return map;
+    };
+    const j = series(day(6, 21)), dc = series(day(12, 21));
+    const yMin = 0, yMax = 360;
+    const X = (hour) => padL + hour / 24 * (w - padL - padR);
+    const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 24, yMin, yMax,
+      [[0,'0h'],[6,'6h'],[12,'12h'],[18,'18h'],[24,'24h']],
+      [[0,'N'],[90,'O'],[180,'S'],[270,'W'],[360,'N']], 'Uhrzeit', 'Azimut [°]', t);
+    const plot = (map, color) => {
+      const pts = Object.entries(map).sort((a,b) => a[0]-b[0]);
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+      pts.forEach(([hr, v], i) => {
+        const x = X(hr), y = Y(v);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    };
+    plot(j, css().getPropertyValue('--c-summer').trim());
+    plot(dc, css().getPropertyValue('--c-winter').trim());
+    ctx.fillStyle = css().getPropertyValue('--c-summer').trim();
+    ctx.fillRect(w - 180, padT, 12, 12); ctx.fillText('21.06.', w - 162, padT + 10);
+    ctx.fillStyle = css().getPropertyValue('--c-winter').trim();
+    ctx.fillRect(w - 180, padT + 18, 12, 12); ctx.fillText('21.12.', w - 162, padT + 28);
+  },
+
+  // 5. Sonnenpfad (Polar: Azimut × Höhe)
+  c5(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const cx = w / 2, cy = h / 2 - 10;
+    const R = Math.min(w, h) / 2 - 60;
+    const day = (monat, tag) => d.rows.filter(r => r.monat === monat && r.tag === tag);
+    const series = (rows) => {
+      const map = {};
+      rows.forEach(r => { if (r.minute === 0 && r.hoehe > 0) map[r.azimut] = r.hoehe; });
+      return map;
+    };
+    const drawPath = (map, color) => {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+      let first = true;
+      for (const az of Object.keys(map).map(Number).sort((a,b)=>a-b)) {
+        const alt = map[az];
+        // Polar: azimut 0=N oben, im Uhrzeigersinn; Radius = Höhe
+        const ang = (az - 90) * Math.PI / 180;
+        const r = alt / 90 * R;
+        const x = cx + r * Math.cos(ang);
+        const y = cy + r * Math.sin(ang);
+        if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    };
+    // Himmelsrichtungs-Kreise
+    ctx.strokeStyle = css().getPropertyValue('--grid').trim(); ctx.lineWidth = 1;
+    for (const a of [30, 60, 90]) { ctx.beginPath(); ctx.arc(cx, cy, a / 90 * R, 0, 2*Math.PI); ctx.stroke(); }
+    // Richtungen
+    ctx.fillStyle = css().getPropertyValue('--text').trim();
+    ctx.fillText('N', cx, cy - R - 12);
+    ctx.fillText('S', cx, cy + R + 16);
+    ctx.fillText('O', cx + R + 10, cy + 4);
+    ctx.fillText('W', cx - R - 16, cy + 4);
+    drawPath(series(day(6, 21)), css().getPropertyValue('--c-summer').trim());
+    drawPath(series(day(12, 21)), css().getPropertyValue('--c-winter').trim());
+    const eq = day(3, 21);
+    drawPath(series(eq), css().getPropertyValue('--c-equi').trim());
+    ctx.fillStyle = css().getPropertyValue('--c-summer').trim();
+    ctx.fillRect(w - 200, 10, 12, 12); ctx.fillText('21.06.', w - 182, 20);
+    ctx.fillStyle = css().getPropertyValue('--c-winter').trim();
+    ctx.fillRect(w - 200, 28, 12, 12); ctx.fillText('21.12.', w - 182, 38);
+    ctx.fillStyle = css().getPropertyValue('--c-equi').trim();
+    ctx.fillRect(w - 200, 46, 12, 12); ctx.fillText('21.03.', w - 182, 56);
+  },
+
+  // 6. Tageslänge über das Jahr
+  c6(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    const pts = [];
+    let maxLen = 0;
+    for (const dt of d.dailyTimes) {
+      if (dt.sunrise != null && dt.sunset != null) {
+        const len = dt.sunset - dt.sunrise;
+        const doy = suncalc.dayOfYear(d.meta.year, dt.monat, dt.tag);
+        pts.push({ doy, len });
+        if (len > maxLen) maxLen = len;
+      }
+    }
+    const yMax = Math.ceil(maxLen + 1), yMin = 0;
+    const X = (doy) => padL + (doy - 1) / 365 * (w - padL - padR);
+    const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 365, yMin, yMax,
+      [[1,'Jan'],[60,'Mär'],[121,'Mai'],[182,'Jul'],[244,'Sep'],[305,'Nov'],[365,'Dez']],
+      [[0,'0'],[yMax/2,''], [yMax, yMax.toFixed(0)+'h']], 'Tag', 'Tageslänge [h]', t);
+    ctx.strokeStyle = css().getPropertyValue('--accent2').trim(); ctx.lineWidth = 2;
+    ctx.beginPath();
+    pts.forEach((p, i) => { const x = X(p.doy), y = Y(p.len); i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); });
+    ctx.stroke();
+    // max annotieren
+    const maxPt = pts.reduce((a,b) => a.len > b.len ? a : b);
+    ctx.fillStyle = css().getPropertyValue('--accent2').trim();
+    ctx.fillText(maxPt.len.toFixed(1) + 'h', X(maxPt.doy) - 20, Y(maxPt.len) - 10);
+  },
+
+  // 7. Zeitgleichung
+  c7(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 50, padB = 40, padT = 15, padR = 20;
+    const eot = [];
+    for (let doy = 1; doy <= 365; doy++) {
+      eot.push({ doy, val: suncalc.equationOfTime(doy) });
+    }
+    const yMax = 18, yMin = -18;
+    const X = (doy) => padL + (doy - 1) / 365 * (w - padL - padR);
+    const Y = (v) => h - padB - (v - yMin) / (yMax - yMin) * (h - padB - padT);
+    drawAxes(ctx, w, h, padL, padB, padT, padR, 365, yMin, yMax,
+      [[1,'Jan'],[60,'Mär'],[121,'Mai'],[182,'Jul'],[244,'Sep'],[305,'Nov'],[365,'Dez']],
+      [[-18,'-18'],[0,'0'],[18,'18']], 'Tag', 'Minuten', t);
+    ctx.strokeStyle = css().getPropertyValue('--c-equi').trim(); ctx.lineWidth = 2;
+    ctx.beginPath();
+    eot.forEach((p, i) => { const x = X(p.doy), y = Y(p.val); i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); });
+    ctx.stroke();
+  },
+
+  // 8. Heatmap (Höhe × Tag × Uhrzeit)
+  c8(canvas, d, t) {
+    const ctx = ctxInit(canvas), w = canvas.width, h = canvas.height;
+    const padL = 55, padB = 40, padT = 15, padR = 20;
+    // Raster: Tag (365) × Stunde (24)
+    const cellW = (w - padL - padR) / 365;
+    const cellH = (h - padB - padT) / 24;
+    // Werte aufbauen: map doy -> hour -> hoehe
+    const grid = new Map();
+    for (const r of d.rows) {
+      if (r.minute !== 0) continue;
+      const doy = suncalc.dayOfYear(d.meta.year, r.monat, r.tag);
+      const key = doy + '-' + r.stunde;
+      grid.set(key, r.hoehe);
+    }
+    const colorAlt = (alt) => {
+      const t = (alt + 10) / 70; // -10..60 → 0..1
+      const clamped = Math.max(0, Math.min(1, t));
+      // Blau → Grün → Gelb → Rot
+      const r = Math.round(255 * Math.min(1, clamped * 1.6));
+      const g = Math.round(255 * clamped);
+      const b = Math.round(255 * (1 - clamped));
+      return `rgb(${r},${g},${b})`;
+    };
+    for (let doy = 1; doy <= 365; doy++) {
+      for (let hr = 0; hr < 24; hr++) {
+        const v = grid.get(doy + '-' + hr);
+        if (v == null) continue;
+        ctx.fillStyle = colorAlt(v);
+        ctx.fillRect(padL + (doy - 1) * cellW, padT + (23 - hr) * cellH, cellW + 0.5, cellH + 0.5);
+      }
+    }
+    // Achsen
+    ctx.fillStyle = css().getPropertyValue('--text').trim(); ctx.font = '10px sans-serif';
+    ctx.fillText('Jan', padL, h - padB + 16); ctx.fillText('Jun', padL + 182*cellW, h - padB + 16); ctx.fillText('Dez', padL + 335*cellW, h - padB + 16);
+    ctx.fillText('24', padL - 28, padT + 4); ctx.fillText('12', padL - 28, padT + 12*cellH); ctx.fillText('0', padL - 28, h - padB - 2);
+  }
+};
+
+/* =====================================================================
+   EXPORT (txt/csv/json)
+   ===================================================================== */
+function buildExport(format) {
+  const d = state.data;
+  if (format === 'json') {
+    return JSON.stringify({
+      meta: {
+        projektname: d.projektname,
+        lat: d.meta.lat, lng: d.meta.lng,
+        year: d.meta.year, resolutionMin: d.meta.resolutionMin,
+        refMeridianDEG: d.meta.refMeridianDEG
+      },
+      sonnenstaende: d.rows,
+      sonnenzeiten: d.dailyTimes.map(dt => ({
+        monat: dt.monat, tag: dt.tag,
+        sonnenaufgang: dt.sunrise, sonnenuntergang: dt.sunset,
+        sonnenmittag: dt.solarNoon, tageslaenge: dt.dayLength
+      }))
+    }, null, 2);
+  }
+  if (format === 'csv') {
+    const header = 'Monat;Tag;Stunde;Minute;Sonnenhoehe[deg];Sonnenazimut[deg]\n';
+    const body = d.rows.map(r => `${r.monat};${r.tag};${r.stunde};${r.minute};${r.hoehe.toFixed(3)};${r.azimut.toFixed(3)}`).join('\n');
+    return '\ufeff' + header + body; // BOM für Excel
+  }
+  // txt (leerzeichengetrennt, V1.1-kompatibel)
+  let txt = `Sun Tracker Export\nProjektname: ${d.projektname}\nBreitengrad: ${d.meta.lat}\nLaengengrad: ${d.meta.lng}\nJahr: ${d.meta.year}\nAufloesung: ${d.meta.resolutionMin} min\nMonat Tag Stunde Minute Sonnenhoehe Sonnenazimut\n`;
+  txt += d.rows.map(r => `${String(r.monat).padStart(2,'0')} ${String(r.tag).padStart(2,'0')} ${String(r.stunde).padStart(2,'0')} ${String(r.minute).padStart(2,'0')} ${r.hoehe.toFixed(3)} ${r.azimut.toFixed(3)}`).join('\n');
+  return txt;
+}
+function download(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+function handleDataExport() {
+  if (!state.data) return;
+  const fmt = el.exportFormat.value;
+  const fname = `${(state.data.projektname || 'suntracker').replace(/\s+/g, '_')}.${fmt}`;
+  const mime = fmt === 'json' ? 'application/json' : fmt === 'csv' ? 'text/csv' : 'text/plain';
+  download(fname, buildExport(fmt), mime);
+}
+
+/* =====================================================================
+   PDF-Bericht (Library-Modus: html2canvas + jsPDF, falls verfügbar)
+   ===================================================================== */
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+function fmtHour(h) {
+  if (h == null) return '–';
+  const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+/* Bericht-Zahlenwerte aus state.data sammeln */
+function computeReportValues() {
+  const d = state.data;
+  const t = I18N[state.lang];
+  const vals = {};
+  let maxH = -90, minH = 90, maxRow = null, minRow = null;
+  for (const r of d.rows) {
+    if (r.hoehe > maxH) { maxH = r.hoehe; maxRow = r; }
+    if (r.hoehe < minH) { minH = r.hoehe; minRow = r; }
+  }
+  vals.maxHoehe = maxH; vals.maxTag = maxRow ? `${maxRow.tag}.${maxRow.monat}.` : '–';
+  vals.minHoehe = minH; vals.minTag = minRow ? `${minRow.tag}.${minRow.monat}.` : '–';
+  const j21 = (r) => r.monat === 6 && r.tag === 21 && r.stunde === 12 && r.minute === 0;
+  const d21 = (r) => r.monat === 12 && r.tag === 21 && r.stunde === 12 && r.minute === 0;
+  const jRow = d.rows.find(j21), dRow = d.rows.find(d21);
+  vals.soHoehe = jRow ? jRow.hoehe : null; vals.soAzimut = jRow ? jRow.azimut : null;
+  vals.wiHoehe = dRow ? dRow.hoehe : null; vals.wiAzimut = dRow ? dRow.azimut : null;
+  const tj = d.dailyTimes.find(x => x.monat === 6 && x.tag === 21);
+  const tw = d.dailyTimes.find(x => x.monat === 12 && x.tag === 21);
+  vals.tlSommer = tj && tj.sunrise != null ? tj.sunset - tj.sunrise : null;
+  vals.tlWinter = tw && tw.sunrise != null ? tw.sunset - tw.sunrise : null;
+  vals.srSommer = tj ? tj.sunrise : null; vals.ssSommer = tj ? tj.sunset : null;
+  vals.srWinter = tw ? tw.sunrise : null; vals.ssWinter = tw ? tw.sunset : null;
+  vals.soNoon = tj ? tj.solarNoon : null;
+  // Monatsmittel-Tageslänge (Durchschnitt über Jahr)
+  let sumLen = 0, nLen = 0;
+  for (const dt of d.dailyTimes) if (dt.sunrise != null && dt.sunset != null) { sumLen += dt.sunset - dt.sunrise; nLen++; }
+  vals.avgTageslaenge = nLen ? sumLen / nLen : null;
+  return vals;
+}
+
+function addPdfTextRow(pdf, x, y, label, value, boldLabel = true, indent = 0) {
+  if (boldLabel) pdf.setFont(undefined, 'bold'); else pdf.setFont(undefined, 'normal');
+  pdf.text(label, x + indent, y);
+  pdf.setFont(undefined, 'normal');
+  pdf.text(value, x + indent + 75, y);
+  return y + 6.5;
+}
+
+async function handlePdfExport() {
+  if (!state.data) return;
+  try {
+    if (typeof html2canvas === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    if (typeof jspdf === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const { jsPDF } = window.jspdf;
+    const t = I18N[state.lang];
+    const v = computeReportValues();
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const mmW = 210, mmH = 297, ml = 18, mr = 18, cw = mmW - ml - mr; // content width
+
+    /* ---------- SEITE 1: Deckblatt + Metadaten ---------- */
+    pdf.setFillColor(240, 165, 0); pdf.rect(0, 0, mmW, 8, 'F');
+    pdf.setTextColor(26, 35, 50);
+    pdf.setFontSize(26); pdf.setFont(undefined, 'bold');
+    pdf.text('Sun Tracker', mmW / 2, 35, { align: 'center' });
+    pdf.setFontSize(16); pdf.setFont(undefined, 'normal');
+    pdf.text(`Sonnenstands-Bericht — ${state.data.projektname}`, mmW / 2, 45, { align: 'center' });
+    pdf.setDrawColor(200); pdf.line(ml, 50, mmW - mr, 50);
+
+    pdf.setFontSize(11); pdf.setFont(undefined, 'bold');
+    pdf.text('Projekt & Standort', ml, 60);
+    pdf.setFontSize(10); pdf.setFont(undefined, 'normal');
+    let y = 68;
+    y = addPdfTextRow(pdf, ml, y, 'Projektname', state.data.projektname);
+    y = addPdfTextRow(pdf, ml, y, 'Breitengrad', state.data.meta.lat.toFixed(4) + '°');
+    y = addPdfTextRow(pdf, ml, y, 'Längengrad', state.data.meta.lng.toFixed(4) + '°');
+    y = addPdfTextRow(pdf, ml, y, 'Berechnungsjahr', String(state.data.meta.year));
+    y = addPdfTextRow(pdf, ml, y, 'Auflösung', state.data.meta.resolutionMin + ' min');
+    y = addPdfTextRow(pdf, ml, y, 'Zeitzone', 'UTC' + (state.data.tzOffset > 0 ? '+' : '') + state.data.tzOffset);
+    y = addPdfTextRow(pdf, ml, y, 'Referenzmeridian', state.data.meta.refMeridianDEG.toFixed(1) + '°');
+    y = addPdfTextRow(pdf, ml, y, 'Sommerzeit', state.data.dstMode === 'auto' ? 'Automatisch' : (state.data.dstMode === 'always' ? 'Immer aktiv' : 'Keine'));
+
+    pdf.setFontSize(11); pdf.setFont(undefined, 'bold');
+    pdf.text('Kennzahlen', ml, y + 2);
+    pdf.setFontSize(10); pdf.setFont(undefined, 'normal');
+    y += 10;
+    y = addPdfTextRow(pdf, ml, y, 'Jahresmaximum Sonnenhöhe', v.maxHoehe.toFixed(1) + '°  (' + v.maxTag + ')');
+    y = addPdfTextRow(pdf, ml, y, 'Jahresminimum Sonnenhöhe', v.minHoehe.toFixed(1) + '°  (' + v.minTag + ')');
+    y = addPdfTextRow(pdf, ml, y, 'Höhe 21.06. (12:00)', (v.soHoehe != null ? v.soHoehe.toFixed(1) : '–') + '°  ·  Azimut ' + (v.soAzimut != null ? v.soAzimut.toFixed(1) : '–') + '°');
+    y = addPdfTextRow(pdf, ml, y, 'Höhe 21.12. (12:00)', (v.wiHoehe != null ? v.wiHoehe.toFixed(1) : '–') + '°  ·  Azimut ' + (v.wiAzimut != null ? v.wiAzimut.toFixed(1) : '–') + '°');
+    y = addPdfTextRow(pdf, ml, y, 'Tageslänge 21.06.', (v.tlSommer != null ? v.tlSommer.toFixed(2) : '–') + ' h');
+    y = addPdfTextRow(pdf, ml, y, 'Tageslänge 21.12.', (v.tlWinter != null ? v.tlWinter.toFixed(2) : '–') + ' h');
+    y = addPdfTextRow(pdf, ml, y, 'Ø Tageslänge (Jahr)', (v.avgTageslaenge != null ? v.avgTageslaenge.toFixed(2) : '–') + ' h');
+    y = addPdfTextRow(pdf, ml, y, 'Sonnenmittag 21.06.', fmtHour(v.soNoon));
+
+    /* ---------- SEITE 2: Sonnenzeiten (21.06. & 21.12.) ---------- */
+    pdf.addPage();
+    pdf.setFillColor(240, 165, 0); pdf.rect(0, 0, mmW, 6, 'F');
+    pdf.setFontSize(14); pdf.setFont(undefined, 'bold');
+    pdf.text('Sonnenzeiten (vergleichende Tabelle)', ml, 20);
+    pdf.setFontSize(9); pdf.setFont(undefined, 'normal');
+
+    // Tabelle Kopf
+    let ty = 30;
+    const colW = cw / 5;
+    const cols = ['Ereignis', '21.06. (Sommer)', '21.12. (Winter)', 'Sommerzeit-Ort', 'Typ'];
+    pdf.setFillColor(26, 35, 50); pdf.setTextColor(255, 255, 255);
+    pdf.rect(ml, ty - 5, cw, 7, 'F');
+    cols.forEach((c, i) => pdf.text(c, ml + i * colW + 2, ty));
+    pdf.setTextColor(26, 35, 50);
+    ty += 8;
+    const rows = [
+      ['Sonnenaufgang', fmtHour(v.srSommer), fmtHour(v.srWinter), 'Höhe = 0°', 'Astronomisch'],
+      ['Sonnenuntergang', fmtHour(v.ssSommer), fmtHour(v.ssWinter), 'Höhe = 0°', 'Astronomisch'],
+      ['Tageslänge', (v.tlSommer != null ? v.tlSommer.toFixed(2) : '–') + ' h', (v.tlWinter != null ? v.tlWinter.toFixed(2) : '–') + ' h', 'Auf – Unter', 'Zeit'],
+    ];
+    rows.forEach((r, i) => {
+      if (i % 2 === 1) { pdf.setFillColor(245, 247, 250); pdf.rect(ml, ty - 5, cw, 7, 'F'); }
+      r.forEach((cell, j) => pdf.text(cell, ml + j * colW + 2, ty));
+      ty += 8;
+    });
+    pdf.setDrawColor(200); pdf.line(ml, ty + 1, mmW - mr, ty + 1);
+    pdf.setFontSize(8); pdf.setTextColor(120, 130, 140);
+    pdf.text('Zeiten in lokaler Standardzeit (ohne Sommerzeit-Verschiebung). Tageslänge ist davon unabhängig.', ml, ty + 6);
+    pdf.setTextColor(26, 35, 50);
+
+    /* ---------- AB SEITE 3: Charts (jede Chart korrekt zugeordnet) ---------- */
+    let first = true;
+    for (const c of CHARTS) {
+      if (!c.on) continue;
+      // Die exakt zugehörige Chart-Box via data-chart finden
+      const box = document.querySelector(`.chart-box[data-chart="${c.id}"]`);
+      if (!box) continue;
+      const canvas = box.querySelector('canvas');
+      if (!canvas) continue;
+      const img = await html2canvas(canvas, { backgroundColor: null });
+      const imgData = img.toDataURL('image/png');
+      const imgW = cw;
+      const imgH = imgW * (img.height / img.width);
+      if (!first) pdf.addPage(); else first = false;
+      pdf.setFontSize(12); pdf.setFont(undefined, 'bold');
+      pdf.text(t[c.key], ml, 20);
+      pdf.setFont(undefined, 'normal');
+      pdf.addImage(imgData, 'PNG', ml, 25, imgW, imgH);
+      // Beschriftung
+      pdf.setFontSize(8); pdf.setTextColor(120, 130, 140);
+      pdf.text(`${state.data.projektname} · ${state.data.meta.lat.toFixed(2)}°, ${state.data.meta.lng.toFixed(2)}° · Jahr ${state.data.meta.year}`, ml, mmH - 12);
+      pdf.setTextColor(26, 35, 50);
+    }
+
+    pdf.save(`${(state.data.projektname || 'suntracker').replace(/\s+/g, '_')}_bericht.pdf`);
+  } catch (e) {
+    alert('PDF-Fehler (evtl. offline): ' + e.message);
+  }
+}
+
+/* =====================================================================
+   GEOLOCATION
+   ===================================================================== */
+function initGeo() {
+  el.geoBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) { el.geoStatus.textContent = I18N[state.lang].geoFail; return; }
+    el.geoStatus.textContent = I18N[state.lang].geoLocating;
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      if (state.coordType === 'dec') {
+        $('latDec').value = lat.toFixed(6);
+        $('lngDec').value = lng.toFixed(6);
+      } else {
+        // Dezimal → DMS
+        const toDMS = (v, isLat) => {
+          const abs = Math.abs(v), d = Math.floor(abs), mFull = (abs - d) * 60, m = Math.floor(mFull), s = (mFull - m) * 60;
+          return { d, m, s: Math.round(s) };
+        };
+        const la = toDMS(lat), lo = toDMS(lng);
+        $('latD').value = la.d; $('latM').value = la.m; $('latS').value = la.s;
+        $('latHemi').value = lat >= 0 ? 'N' : 'S';
+        $('lngD').value = lo.d; $('lngM').value = lo.m; $('lngS').value = lo.s;
+        $('lngHemi').value = lng >= 0 ? 'E' : 'W';
+      }
+      el.geoStatus.textContent = I18N[state.lang].geoSuc + ` (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    }, () => { el.geoStatus.textContent = I18N[state.lang].geoFail; }, { timeout: 8000 });
+  });
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+function init() {
+  setTheme('light');
+  $('langBtn').innerHTML = '<span style="font-size:24px">' + FLAG_EMOJI[state.lang] + '</span>';
+  el.themeBtn = $('themeBtn');
+  $('themeBtn').addEventListener('click', () => setTheme(state.theme === 'light' ? 'dark' : 'light'));
+  $('langBtn').addEventListener('click', cycleLang);
+  el.coordTypeSeg.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => setCoordType(b.dataset.ct));
+  });
+  el.calcBtn.addEventListener('click', runCalculation);
+  el.dlDataBtn.addEventListener('click', handleDataExport);
+  el.dlPdfBtn.addEventListener('click', handlePdfExport);
+  el.printBtn.addEventListener('click', () => window.print());
+  initGeo();
+  applyLang();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
