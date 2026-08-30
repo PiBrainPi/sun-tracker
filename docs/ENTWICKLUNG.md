@@ -307,4 +307,59 @@ curl -s -o jspdf.umd.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/j
 
 ---
 
-_Erstellt von Hermes am 16.08.2026 · Bereit für kontinuierliche Weiterarbeit mit leerem Kontext._
+## 13. Deployment & Live-Hosting (Stand: 30.08.2026)
+
+> **Dieser Abschnitt wurde am 30.08.2026 ergänzt**, als der Sun Tracker als **zweites Tool** auf dem
+> GitHub-Pages-Portal `ingenieur-tools.de` live gegangen ist. Er ist die Brücke zwischen der
+> reinen Code-Doku (oben) und dem Betrieb/Jahr der Subdomain.
+
+| Feld | Wert |
+|---|---|
+| **Live-URL** | `https://sonne.ingenieur-tools.de/` (HTTP jetzt; HTTPS-Zertifikat in Ausstellung) |
+| **GitHub-Repo** | `https://github.com/PiBrainPi/sun-tracker` (öffentlich) |
+| **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE) |
+| **Deploy-Branch** | `gh-pages` (enthält nur `index.html` = `src/Sun_Tracker_V03.html` + `CNAME`) |
+| **Custom Domain** | `sonne.ingenieur-tools.de` (CNAME → `pibrainpi.github.io.` in netcup CloudDNS) |
+| **Lizenz** | MIT (Copyright Fabian Bussenius) |
+| **Betreiber/Impressum** | Fabian Bussenius · Jüthornstraße 50 · 22043 Hamburg · fabibuss@web.de (§ 5 DDG) |
+
+### 13.1 Wie deployen (bei Änderungen an V03)
+
+```bash
+cd ~/Projects/Sun_Tracker
+# 1. Quell-Änderung committen (main)
+git add -A && git commit -m "Beschreibung" && git push origin main
+
+# 2. Single-File auf gh-pages-Branch aktualisieren
+git checkout gh-pages
+cp src/Sun_Tracker_V03.html index.html
+echo "sonne.ingenieur-tools.de" > CNAME          # bleibt erhalten
+git add index.html CNAME && git commit -m "Deploy V03-Update"
+git fetch origin gh-pages && git rebase origin/gh-pages   # GitHub-CNAME-Commit einholen
+git push origin gh-pages
+git checkout main
+```
+
+> **Wichtig (Pitfall):** GitHub schreibt bei aktivem Pages automatisch einen `Create CNAME`-Commit
+> in den `gh-pages`-Branch. Vor jedem Push **`git fetch` + `git rebase origin/gh-pages`**, sonst
+> non-fast-forward-Fehler.
+> Nach dem `git checkout gh-pages` liegen alle Quell-Dateien als **untracked** im Arbeitsbaum
+> (sie sind dort nicht getrackt) — das ist normal; nur `index.html` + `CNAME` ändern/committen.
+
+### 13.2 DSGVO / Rechtliches (eingebaut)
+
+- **Impressum** (§ 5 DDG) + **Datenschutzerklärung** sind als **Modals** im Footer der App eingebaut
+  (Footer-Links „Impressum" / „Datenschutz"). Betreiber = Fabian Bussenius.
+- **Datenschutz-Punkte:** kein Tracking/Cookies; Geolocation nur lokal im Browser; Hosting-Logs bei
+  GitHub; **Transparenz zu CDN-Bibliotheken** `html2canvas` + `jspdf` (werden erst beim PDF-/Bild-Export
+  on-demand von cdnjs.cloudflare.com geladen — im DS-Text offengelegt, Art. 6(1)f DSGVO).
+- **Sprachen:** Impressum/Datenschutz sind dauerhaft auf Deutsch (rechtssicher), unabhängig vom UI-Sprach-Toggle.
+
+### 13.3 Verknüpfung mit dem Portal
+
+- Die Hauptseite `ingenieur-tools.de` verlinkt den Sun Tracker als Tool-Karte „Sun Tracker" →
+  `https://sonne.ingenieur-tools.de/`. (Neues Tool = neue Karte im `ingenieur-tools-portal`-Repo anlegen.)
+
+---
+
+_Erstellt von Hermes am 16.08.2026 · aktualisiert am 30.08.2026 (Deployment & Hosting) · Bereit für kontinuierliche Weiterarbeit mit leerem Kontext._
