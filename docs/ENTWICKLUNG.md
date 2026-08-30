@@ -315,7 +315,7 @@ curl -s -o jspdf.umd.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/j
 
 | Feld | Wert |
 |---|---|
-| **Live-URL** | `https://sonne.ingenieur-tools.de/` (HTTP jetzt; HTTPS-Zertifikat in Ausstellung) |
+| **Live-URL** | `https://sonne.ingenieur-tools.de/` (⚠️ HTTPS-Zertifikat in Ausstellung steckengeblieben am 30.08.2026 → Fix: Custom Domain in Repo-Settings entfernt + neu gesetzt; Watchdog-Cron `d9880f4fff1e` prüft alle 10 Min auf Aktivierung und meldet bei Erfolg) |
 | **GitHub-Repo** | `https://github.com/PiBrainPi/sun-tracker` (öffentlich) |
 | **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE) |
 | **Deploy-Branch** | `gh-pages` (enthält nur `index.html` = `src/Sun_Tracker_V03.html` + `CNAME`) |
@@ -346,7 +346,44 @@ git checkout main
 > Nach dem `git checkout gh-pages` liegen alle Quell-Dateien als **untracked** im Arbeitsbaum
 > (sie sind dort nicht getrackt) — das ist normal; nur `index.html` + `CNAME` ändern/committen.
 
-### 13.2 DSGVO / Rechtliches (eingebaut)
+### 13.2 HTTPS-Zertifikats-Troubleshooting (sonne, Stand 30.08.2026)
+
+**Symptom:** Browser zeigt „Sichere Verbindung fehlgeschlagen" bei `https://sonne.ingenieur-tools.de/` —
+es wird das generische `*.github.io`-Fallback-Zertifikat ausgeliefert (Hostname mismatch) statt eines
+individuellen Let's-Encrypt-Zertifikats für `sonne.ingenieur-tools.de`.
+
+**Diagnose (`gh api repos/PiBrainPi/sun-tracker/pages`):**
+- `cname` korrekt = `sonne.ingenieur-tools.de`
+- `https_certificate.state` hängt auf **`authorization_created`** ("Authorization created")
+- `pending_domain_unverified_at: null` (Domain ist DNS-verifiziert, CNAME propagiert korrekt)
+- `openssl s_client -connect ... :443` liefert `CN=*.github.io` (kein individuelles Zert)
+
+**Ursache:** Die Let's-Encrypt-Zertifikatsausstellung war im Zustand `authorization_created` **festgehängt**
+und schritt nicht selbstständig fort — trotz korrektem CNAME/DNS. `PUT { "https_enforced": true }` →
+`404 "The certificate has not finished being issued"`; `DELETE /pages` ist geblockt
+("Deactivating GitHub pages ... not allowed").
+
+**Fix (erfolgreich, per GitHub-API):**
+```bash
+# 1) Custom Domain ENTFERNEN (leer setzen) — setzt Zert-Ausstellung zurück
+gh api -X PUT repos/PiBrainPi/sun-tracker/pages --input - <<'EOF'
+{"cname": ""}
+EOF
+
+# 2) Kurz warten, dann Custom Domain NEU setzen — frischer Ausstellungsjob
+gh api -X PUT repos/PiBrainPi/sun-tracker/pages --input - <<'EOF'
+{"cname": "sonne.ingenieur-tools.de"}
+EOF
+```
+→ `cname` wieder gesetzt, Zert-Ausstellung neu gestartet. Verifikation per
+`gh api repos/PiBrainPi/sun-tracker/pages --jq '.https_certificate.state'` (soll `available`/`active`
+werden) bzw. `https_works()`-Check.
+
+**Monitoring:** Cron-Job `d9880f4fff1e` (`~/.hermes/scripts/sonne_https_watchdog.py`) prüft alle 10 Minuten
+mit echter TLS-Zertifikatsverifikation, ob das Zert aktiv ist, und meldet **nur bei Erfolg** (Watchdog-Pattern).
+Sobald aktiv → Doku-Zeile oben auf „HTTPS aktiv" setzen.
+
+### 13.3 DSGVO / Rechtliches (eingebaut)
 
 - **Impressum** (§ 5 DDG) + **Datenschutzerklärung** sind als **Modals** im Footer der App eingebaut
   (Footer-Links „Impressum" / „Datenschutz"). Betreiber = Fabian Bussenius.
