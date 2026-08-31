@@ -1958,51 +1958,115 @@ document.addEventListener('DOMContentLoaded', init);
   </div>
 </div>
 
-<!-- Datenschutz-Modal -->
+<!-- Datenschutz-Modal (Revision V04 2026-08-31: DE/EN, Drittland/DPF, HmbBfDI, Stand, keine Pauschalaussagen) -->
 <div id="st-datenschutz-modal" class="st-modal">
   <div class="st-mbox">
     <button type="button" class="st-mclose" data-close="st-datenschutz-modal" aria-label="Schließen">✕</button>
-    <h2>Datenschutzerklärung</h2>
-    <p class="st-mlead">für die Anwendung „Sun Tracker – Sonnenhöhenrechner".</p>
-    <div class="st-msec">
-      <h3>Verantwortlicher</h3>
-      <p>Fabian Bussenius<br>Jüthornstraße 50<br>22043 Hamburg<br>E-Mail: <a href="mailto:fabibuss@web.de">fabibuss@web.de</a></p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <h2 style="margin:0;">Datenschutzerklärung <span style="font-weight:400;font-size:.78rem;color:var(--muted);">· Deutsch</span></h2>
+      <button type="button" id="st-ds-lang" style="font-size:.78rem;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;">🇬🇧 English</button>
     </div>
-    <div class="st-msec">
-      <h3>Grundsatz</h3>
-      <p>Der Sonnenhöhenrechner ist eine vollständig lokale Anwendung. Sie speichert und überträgt
-      <strong>keine personenbezogenen Daten</strong>. Es werden keine Cookies gesetzt, kein Tracking
-      und keine Analyse-Dienste verwendet. Alle Berechnungen erfolgen direkt in Ihrem Browser.</p>
+    <div id="st-ds-de">
+      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">für die Anwendung „Sun Tracker – Sonnenhöhenrechner" · Stand: 31.08.2026 · Vollständige Erklärung aller Angebote: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
+      <div class="st-msec">
+        <h3>Verantwortlicher</h3>
+        <p>Fabian Bussenius<br>Jüthornstraße 50<br>22043 Hamburg<br>E-Mail: <a href="mailto:fabibuss@web.de">fabibuss@web.de</a> · <a href="https://ingenieur-tools.de/impressum.html" target="_blank" rel="noopener noreferrer">Impressum</a></p>
+      </div>
+      <div class="st-msec">
+        <h3>Grundsatz</h3>
+        <p>Der Sonnenhöhenrechner ist eine lokale Anwendung. Alle Berechnungen erfolgen direkt in Ihrem
+        Browser. Es werden <strong>keine Analyse-Cookies, kein Tracking und keine Webanalyse-Dienste</strong>
+        eingesetzt. Wir (Betreiber) speichern selbst keine personenbezogenen Daten; auf die Server-Logs des
+        Hosting-Anbieters (Abschnitt „Hosting") wird hingewiesen.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Geolokalisierung (optional)</h3>
+        <p>Beim Klick auf „Standort verwenden" kann Ihr Browser den aktuellen Standort abfragen. Diese Daten
+        werden ausschließlich lokal in Ihrem Browser verarbeitet und von uns <strong>nicht gespeichert</strong>.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Externe Bibliotheken (PDF-/Bild-Export)</h3>
+        <p>Für den Export lädt die Anwendung bei Bedarf die Client-Bibliotheken
+        (<code>html2canvas</code>, <code>jspdf</code>) vom Content-Delivery-Network
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare (cdnjs)</a>.
+        Cloudflare Inc. hat seinen Sitz in den USA und ist nach dem EU-US Data Privacy Framework (DPF) zertifiziert.
+        Dabei kann Ihre IP-Adresse übertragen werden (berechtigtes Interesse an der Bereitstellung der Export-Funktion,
+        Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO; DPF als Übermittlungsgrundlage). Beim alleinigen Berechnen (ohne
+        Export) werden diese Bibliotheken nicht abgerufen.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Hosting</h3>
+        <p>Diese Seite wird über <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub Inc.</a>
+        (GitHub Pages; Server u.&nbsp;a. in den USA) bereitgestellt. Beim Aufruf verarbeitet GitHub technisch notwendige
+        Server-Logdaten (IP-Adresse, Zeitpunkt, aufgerufene Ressource). Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1
+        lit.&nbsp;f DSGVO. GitHub ist nach dem EU-US Data Privacy Framework (DPF) zertifiziert; die konkrete Speicherdauer
+        der Logs legt GitHub fest.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Ihre Rechte</h3>
+        <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer
+        personenbezogenen Daten sowie auf Datenübertragbarkeit und auf <strong>Widerspruch</strong> (Art.&nbsp;21 DSGVO).
+        Beschwerden richten Sie an die zuständige Aufsichtsbehörde: <a href="https://datenschutz-hamburg.de/" target="_blank" rel="noopener noreferrer">Hamburgische Beauftragte für Datenschutz und Informationsfreiheit (HmbBfDI)</a>.</p>
+      </div>
     </div>
-    <div class="st-msec">
-      <h3>Geolokalisierung (optional)</h3>
-      <p>Beim Klick auf „Standort verwenden" kann Ihr Browser den aktuellen Standort abfragen. Diese
-      Daten werden ausschließlich lokal in Ihrem Browser verarbeitet und <strong>nicht gespeichert oder
-      übertragen</strong>.</p>
-    </div>
-    <div class="st-msec">
-      <h3>Externe Bibliotheken</h3>
-      <p>Für den PDF- und Bild-Export lädt die Anwendung zwei Client-Bibliotheken
-      (<code>html2canvas</code>, <code>jspdf</code>) vom Content-Delivery-Network
-      <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare (cdnjs)</a>.
-      Dabei kann Ihre IP-Adresse an diesen Anbieter übertragen werden (berechtigtes Interesse an der
-      Bereitstellung der Export-Funktion, Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO). Rechtsgrundlage und Details
-      entnehmen Sie der <a href="https://cdnjs.com/about" target="_blank" rel="noopener noreferrer">cdnjs-Datenschutzauskunft</a>.
-      Beim alleinigen Berechnen (ohne Export) werden diese Bibliotheken nicht aktiv abgerufen.</p>
-    </div>
-    <div class="st-msec">
-      <h3>Hosting</h3>
-      <p>Die Seite wird über den Hosting-Anbieter GitHub Inc. (GitHub Pages) bereitgestellt. Beim Aufruf
-      können technisch notwendige Server-Logdaten (IP-Adresse, Zeitpunkt) verarbeitet werden.</p>
-    </div>
-    <div class="st-msec">
-      <h3>Ihre Rechte</h3>
-      <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer
-      personenbezogenen Daten sowie auf Datenübertragbarkeit. Beschwerden richten Sie an eine
-      Datenschutz-Aufsichtsbehörde.</p>
+    <div id="st-ds-en" style="display:none;">
+      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">for the application "Sun Tracker – solar elevation calculator" · Version: 31.08.2026 · Full privacy policy for all services: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
+      <div class="st-msec">
+        <h3>Controller</h3>
+        <p>Fabian Bussenius<br>Jüthornstraße 50<br>22043 Hamburg<br>Germany<br>Email: <a href="mailto:fabibuss@web.de">fabibuss@web.de</a> · <a href="https://ingenieur-tools.de/impressum.html" target="_blank" rel="noopener noreferrer">Legal notice</a></p>
+      </div>
+      <div class="st-msec">
+        <h3>Principles</h3>
+        <p>The Sun Tracker is a local application. All calculations run directly in your browser. We do
+        <strong>not use analysis cookies, tracking, or web analytics services</strong>. As the operator we do not
+        store personal data ourselves; please see the "Hosting" section regarding server logs.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Geolocation (optional)</h3>
+        <p>Clicking "Use location" may prompt your browser for your current location. This data is processed
+        locally in your browser and is <strong>not stored</strong> by us.</p>
+      </div>
+      <div class="st-msec">
+        <h3>External libraries (PDF/image export)</h3>
+        <p>When you export, the app loads the client libraries (<code>html2canvas</code>, <code>jspdf</code>) from
+        the content delivery network <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare (cdnjs)</a>.
+        Cloudflare Inc. is based in the US and is certified under the EU-US Data Privacy Framework (DPF). Your IP
+        address may be transmitted (legitimate interest in providing the export function, Art.&nbsp;6(1)(f) GDPR; DPF as
+        transfer basis). These libraries are not loaded when you only calculate (without exporting).</p>
+      </div>
+      <div class="st-msec">
+        <h3>Hosting</h3>
+        <p>This page is provided by <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub Inc.</a>
+        (GitHub Pages; servers incl. the US). When you visit, GitHub processes technically necessary server log data
+        (IP address, time, requested resource). Legal basis: Art.&nbsp;6(1)(f) GDPR. GitHub is certified under the
+        EU-US Data Privacy Framework (DPF); GitHub determines the retention period of the logs.</p>
+      </div>
+      <div class="st-msec">
+        <h3>Your rights</h3>
+        <p>You have the right to access, rectification, erasure, restriction of processing, data portability and
+        to <strong>object</strong> (Art.&nbsp;21 GDPR). Complaints may be addressed to the supervisory authority: <a href="https://datenschutz-hamburg.de/" target="_blank" rel="noopener noreferrer">Hamburgische Beauftragte für Datenschutz und Informationsfreiheit (HmbBfDI)</a>.</p>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+// DS-Modal DE/EN-Umschaltung (V04)
+(function(){
+  var btn = document.getElementById('st-ds-lang');
+  if(!btn) return;
+  var de = document.getElementById('st-ds-de'), en = document.getElementById('st-ds-en');
+  var on = false;
+  btn.addEventListener('click', function(){
+    on = !on;
+    if (de) de.style.display = on ? 'none' : '';
+    if (en) en.style.display = on ? '' : 'none';
+    btn.textContent = on ? '🇩🇪 Deutsch' : '🇬🇧 English';
+    var h = btn.closest('.st-mbox').querySelector('h2 span');
+    if (h) h.textContent = on ? '· English' : '· Deutsch';
+  });
+})();
+</script>
 
 </body>
 </html>
