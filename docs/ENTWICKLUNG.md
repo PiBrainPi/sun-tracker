@@ -6,7 +6,7 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 
 ---
 
-## 1. Projektübersicht (Stand: 16.08.2026, V03)
+## 1. Projektübersicht (Stand: 31.08.2026, V04)
 
 | Feld | Wert |
 |---|---|
@@ -15,13 +15,14 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 | Plattform | Browser (Single-File HTML), später VPS |
 | Vorgänger | Python/tkinter `Sonnenstand_20181006_12–14` (FBU, 28.02.2020) |
 | Referenz-Version | V2.1 (`_archiv_alt/Sonnenstand_20181006_14.py`) — korrekte Astronomie |
-| **Aktuelle App** | `src/Sun_Tracker_V03.html` (aktiv, ~115 KB) |
+| **Aktuelle App** | `src/Sun_Tracker_V04_2026-08-31.html` (aktiv, DSGVO-Update; ~127 KB). Deployed als `gh-pages/index.html`. |
 | **Berechnungs-Kern** | `src/suncalc.js` (pur, DOM-frei, Node-testbar) |
 | **Versionierung** | Datei-Endung `<Name>_V<Nummer>.html` (Nutzer-Konvention) |
 | **Status** | ✅ **Funktional & alle Tests grün (118/118)** |
 
-> **Wichtig:** `src/Sun_Tracker_V01.html` und `src/Sun_Tracker_V02.html` sind **ältere Revisionen**
-> (mit bekannten Bugs) und dienen nur als Referenz. Arbeite **immer** mit `Sun_Tracker_V03.html`.
+> **Wichtig:** `src/Sun_Tracker_V01.html`, `V02.html` und `V03.html` sind **ältere Revisionen**
+> (mit bekannten Bugs bzw. dem alten DSGVO-Unstand) und dienen nur als Referenz. Arbeite **immer**
+> mit `Sun_Tracker_V04_2026-08-31.html`.
 
 ---
 
@@ -39,7 +40,7 @@ geografischen Standort Sonnenhöhe und -azimut je Tag berechnet. 2026 wurde es p
 
 ---
 
-## 3. Aktueller Funktionsumfang (V03)
+## 3. Aktueller Funktionsumfang (V04)
 
 ### 3.1 Kernberechnung (aus V2.1 portiert)
 - Astronomische Näherungsformeln: Deklination, Zeitgleichung, Stundenwinkel, Kugeldreieck.
@@ -105,7 +106,8 @@ Sun_Tracker/
 │   ├── suncalc.js         # Berechnungs-Kern (pur, Node-testbar) — SAME wie eingebettet in HTML
 │   ├── Sun_Tracker_V01.html  # Ältere Revision (Referenz)
 │   ├── Sun_Tracker_V02.html  # Ältere Revision (Referenz)
-│   └── Sun_Tracker_V03.html  # ★ AKTIVE VERSION (bearbeiten!)
+│   ├── Sun_Tracker_V03.html  # Ältere Revision (Referenz; alter DSGVO-Stand)
+│   └── Sun_Tracker_V04_2026-08-31.html  # ★ AKTIVE VERSION (bearbeiten!, DSGVO)
 ├── tests/
 │   ├── test_suncalc.js     # Unit-Tests suncalc (15)
 │   ├── e2e_test.js         # Browser-E2E (11)
@@ -220,7 +222,7 @@ cos(A)          = (sin(k·δ) - sin(k·α)·sin(k·lat)) / (cos(k·α)·cos(k·l
 | `tests/v03_round3_test.js` | **4/4** ✓ | Solstitien-Y-Achse, Polar, c11/c12-Matrix, c13 |
 | `tests/validate_html.js` | **8/8** ✓ | Syntax, Div-Balance |
 
-**Gesamt: 118/118 ✓** (Stand 16.08.2026, V03, 13 Charts)
+**Gesamt: 118/118 ✓** (Stand 16.08.2026, V04, 13 Charts; die DSGVO-Änderungen in V04 berühren keine Berechnungstest-Logik)
 
 ### So führst du die Tests aus (wichtig für neue Sessions!)
 ```bash
@@ -399,16 +401,20 @@ Die Site bleibt über `http://sonne.ingenieur-tools.de/` erreichbar; Apps/PDF-Ex
 mit echter TLS-Zertifikatsverifikation, ob das Zert aktiv ist, und meldet **nur bei Erfolg** (Watchdog-Pattern).
 Sobald aktiv → Doku-Zeile oben auf „HTTPS aktiv" setzen.
 
-### 13.3 DSGVO / Rechtliches (eingebaut)
+### 13.3 DSGVO / Rechtliches (eingebaut, Stand V04 / 2026-08-31)
 
 - **Impressum** (§ 5 DDG) + **Datenschutzerklärung** sind als **Modals** im Footer der App eingebaut
   (Footer-Links „Impressum" / „Datenschutz"). Betreiber = Fabian Bussenius.
-- **Datenschutz-Punkte:** kein Tracking/Cookies; Geolocation nur lokal im Browser; Hosting-Logs bei
-  GitHub; **Transparenz zu CDN-Bibliotheken** `html2canvas` + `jspdf` (werden erst beim PDF-/Bild-Export
-  on-demand von cdnjs.cloudflare.com geladen — im DS-Text offengelegt, Art. 6(1)f DSGVO).
-- **Sprachen:** Impressum/Datenschutz sind dauerhaft auf Deutsch (rechtssicher), unabhängig vom UI-Sprach-Toggle.
+- **Datenschutz-Punkte (V04):** kein Tracking/Cookies; Geolocation nur lokal im Browser; Hosting-Logs bei
+  GitHub (Server-Logs: IP, Zeitpunkt, Zweck — korrekt abgegrenzt, keine Pauschalaussage „keine Daten");
+  **Drittland-Transfer** GitHub/Cloudflare (USA) transparent gemacht — EU-US **Data Privacy Framework (DPF)**;
+  **cdnjs/Cloudflare** (USA) wird **on-demand** erst beim PDF-/Bild-Export geladen (im DS-Text offengelegt,
+  Art. 6(1)f DSGVO); **HmbBfDI** als Aufsichtsbehörde benannt; **Widerspruchsrecht (Art. 21)**; **Stand-Datum**.
+- **Sprachen (V04):** Datenschutz-Modal ist **DE + EN umschaltbar** (In-Modal-Toggle, EN als allgemein
+  verständliche Zweitsprache; volle 5-Sprachen-Übersetzung unverhältnismäßig, Art. 12 pragmatisch erfüllt).
+  Im Haupt-UI bleibt der 5-Sprachen-Toggle (de/en/es/pt/zh) unverändert.
 
-### 13.3 Verknüpfung mit dem Portal
+### 13.4 Verknüpfung mit dem Portal
 
 - Die Hauptseite `ingenieur-tools.de` verlinkt den Sun Tracker als Tool-Karte „Sun Tracker" →
   `https://sonne.ingenieur-tools.de/`. (Neues Tool = neue Karte im `ingenieur-tools-portal`-Repo anlegen.)

@@ -1,9 +1,10 @@
 # Sun Tracker — 20-Punkteplan (Konzeption → Umsetzung → Test)
 
-> **STATUS (16.08.2026):** Alle Phasen A–D sind inzwischen **umgesetzt**. Die aktive Version ist
-> `src/Sun_Tracker_V03.html` (funktional, alle Tests grün). Dieser Plan dient als **historischer
-> Referenzplan** — der aktuelle Stand steht in `docs/ENTWICKLUNG.md`. Die hier beschriebenen
-> 8 Charts sind inzwischen auf **10** erweitert (c9 Tageslängen-Matrix, c10 Monats-Balken).
+> **STATUS (31.08.2026, V04):** Alle Phasen A–D sind umgesetzt. Die aktive Version ist
+> `src/Sun_Tracker_V04_2026-08-31.html` (DSGVO-Update: Datenschutz-Modal DE/EN, Drittland/DPF, HmbBfDI,
+> Widerspruch, Stand — deployed als `gh-pages`). V03 war der vorherige funktionale Stand. Dieser Plan
+> dient als **historischer Referenzplan** — der aktuelle Stand steht in `docs/ENTWICKLUNG.md`. Die hier
+> beschriebenen 8 Charts sind inzwischen auf **10** erweitert (c9 Tageslängen-Matrix, c10 Monats-Balken).
 
 Projekt: Neuaufbau des Sonnenstands-Rechners als **Single-File-HTML/JS-Web-App**
 Basis: archivierte Python-Version V2.1 (`_archiv_alt/Sonnenstand_20181006_14.py`)
