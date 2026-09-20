@@ -29,7 +29,7 @@ only when an export is requested. Impressum + privacy policy are embedded in the
 sun-tracker/
 ├── src/
 │   ├── suncalc.js         # Pure calculation core (Meeus/NOAA), testable
-│   └── Sun_Tracker_V04_2026-08-31.html   # ★ ACTIVE single-file app (DSGVO v2; V01–V03 older)
+│   └── Sun_Tracker_V05_2026-09-20.html   # ★ ACTIVE single-file app (DSGVO V53: Vercel-Hosting, Stand 20.09.; V04 = Archiv)
 ├── tests/                 # Automated tests & reference values (96 checks)
 ├── docs/ENTWICKLUNG.md    # Full project documentation (German)
 ├── assets/                # Icons, screenshots, example PDF (gitignored)
@@ -39,7 +39,7 @@ sun-tracker/
 
 ## Quick start (local)
 
-1. Open `src/Sun_Tracker_V04_2026-08-31.html` in a browser (double-click is enough).
+1. Open `src/Sun_Tracker_V05_2026-09-20.html` in a browser (double-click is enough).
 2. No server, no build, no installation required.
 
 ## Tech

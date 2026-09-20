@@ -6,7 +6,7 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 
 ---
 
-## 1. Projektübersicht (Stand: 31.08.2026, V04)
+## 1. Projektübersicht (Stand: 20.09.2026, V05)
 
 | Feld | Wert |
 |---|---|
@@ -15,14 +15,15 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 | Plattform | Browser (Single-File HTML), später VPS |
 | Vorgänger | Python/tkinter `Sonnenstand_20181006_12–14` (FBU, 28.02.2020) |
 | Referenz-Version | V2.1 (`_archiv_alt/Sonnenstand_20181006_14.py`) — korrekte Astronomie |
-| **Aktuelle App** | `src/Sun_Tracker_V04_2026-08-31.html` (aktiv, DSGVO-Update; ~127 KB). Deployed als `gh-pages/index.html`. |
+| **Aktuelle App** | `src/Sun_Tracker_V05_2026-09-20.html` (aktiv, **V53-DSGVO: Hosting-Block Vercel + Stand 20.09.**, DE+EN; ~127 KB). Deploy-Basis: gh-pages `index.html` → **Vercel** (`sonne.ingenieur-tools.de`) via `scripts/deploy_vercel.sh`. |
 | **Berechnungs-Kern** | `src/suncalc.js` (pur, DOM-frei, Node-testbar) |
 | **Versionierung** | Datei-Endung `<Name>_V<Nummer>.html` (Nutzer-Konvention) |
-| **Status** | ✅ **Funktional & alle Tests grün (118/118)** |
+| **Status** | ✅ **Funktional & alle Tests grün (118/118) · LIVE auf Vercel** |
 
-> **Wichtig:** `src/Sun_Tracker_V01.html`, `V02.html` und `V03.html` sind **ältere Revisionen**
-> (mit bekannten Bugs bzw. dem alten DSGVO-Unstand) und dienen nur als Referenz. Arbeite **immer**
-> mit `Sun_Tracker_V04_2026-08-31.html`.
+> **Wichtig:** `src/Sun_Tracker_V01.html` … `V04.html` sind **ältere Revisionen** (V04 hatte noch
+> den GitHub-Hosting-Block — 20.09. obsolet). Arbeite **immer** mit `Sun_Tracker_V05_2026-09-20.html`.
+> **Hosting (20.09.):** Vercel-Projekt `sun-tracker` (Team pi-brain); GitHub Pages nur Archiv.
+> Die alte HTTPS-Zombie-Doku (§ 13.2 unten) ist **historisch** — Problem existiert nicht mehr.
 
 ---
 
@@ -317,13 +318,17 @@ curl -s -o jspdf.umd.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/j
 
 | Feld | Wert |
 |---|---|
-| **Live-URL** | `https://sonne.ingenieur-tools.de/` (⚠️ HTTPS-Zertifikat in Ausstellung steckengeblieben am 30.08.2026 → Fix: Custom Domain in Repo-Settings entfernt + neu gesetzt; Watchdog-Cron `d9880f4fff1e` prüft alle 10 Min auf Aktivierung und meldet bei Erfolg) |
-| **GitHub-Repo** | `https://github.com/PiBrainPi/sun-tracker` (öffentlich) |
-| **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE) |
-| **Deploy-Branch** | `gh-pages` (enthält nur `index.html` = `src/Sun_Tracker_V03.html` + `CNAME`) |
-| **Custom Domain** | `sonne.ingenieur-tools.de` (CNAME → `pibrainpi.github.io.` in netcup CloudDNS) |
+| **Live-URL** | `https://sonne.ingenieur-tools.de/` — **Vercel** seit 20.09.2026 (HTTPS, LE bis 19.12.26) |
+| **GitHub-Repo** | `https://github.com/PiBrainPi/sun-tracker` (öffentlich; GitHub-Pages = Archiv) |
+| **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE — aktiv: `Sun_Tracker_V05_2026-09-20.html`) |
+| **Deploy-Basis** | `gh-pages` (nur `index.html`) → `scripts/deploy_vercel.sh` (Vercel-Projekt `sun-tracker`) |
+| **Domain** | `sonne.ingenieur-tools.de` (CNAME → `eaa66ba81ff17087.vercel-dns-017.com.` in netcup CloudDNS, TTL 3600) |
 | **Lizenz** | MIT (Copyright Fabian Bussenius) |
 | **Betreiber/Impressum** | Fabian Bussenius · Jüthornstraße 50 · 22043 Hamburg · fabibuss@web.de (§ 5 DDG) |
+
+> ⚠️ **Der folgende Abschnitt 13.1/13.2 (GitHub-Pages-Deploy + HTTPS-Zombie) ist HISTORISCH** —
+> seit 20.09.2026 läuft der Deploy via `scripts/deploy_vercel.sh` nach Vercel; das GitHub-Zert-
+> Problem existiert nicht mehr (Tool lebt auf Vercel). Nicht mehr nach GitHub deployen!
 
 ### 13.1 Wie deployen (bei Änderungen an V03)
 

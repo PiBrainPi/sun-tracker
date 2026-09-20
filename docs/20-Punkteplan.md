@@ -1,7 +1,8 @@
 # Sun Tracker — 20-Punkteplan (Konzeption → Umsetzung → Test)
 
-> **STATUS (31.08.2026, V04):** Alle Phasen A–D sind umgesetzt. Die aktive Version ist
-> `src/Sun_Tracker_V04_2026-08-31.html` (DSGVO-Update: Datenschutz-Modal DE/EN, Drittland/DPF, HmbBfDI,
+> **STATUS (20.09.2026, V05):** Alle Phasen A–D umgesetzt + DSGVO V53 (Hosting-Block Vercel).
+> Aktive Version: `src/Sun_Tracker_V05_2026-09-20.html` · Live: sonne.ingenieur-tools.de (Vercel) ·
+> Historie: V04 (31.08.) hatte noch den GitHub-Hosting-Block. (DSGVO-Update: Datenschutz-Modal DE/EN, Drittland/DPF, HmbBfDI,
 > Widerspruch, Stand — deployed als `gh-pages`). V03 war der vorherige funktionale Stand. Dieser Plan
 > dient als **historischer Referenzplan** — der aktuelle Stand steht in `docs/ENTWICKLUNG.md`. Die hier
 > beschriebenen 8 Charts sind inzwischen auf **10** erweitert (c9 Tageslängen-Matrix, c10 Monats-Balken).
