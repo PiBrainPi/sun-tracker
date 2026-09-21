@@ -1967,7 +1967,7 @@ document.addEventListener('DOMContentLoaded', init);
       <button type="button" id="st-ds-lang" style="font-size:.78rem;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer;">🇬🇧 English</button>
     </div>
     <div id="st-ds-de">
-      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">für die Anwendung „Sun Tracker – Sonnenhöhenrechner" · Stand: 20.09.2026 · Vollständige Erklärung aller Angebote: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
+      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">für die Anwendung „Sun Tracker – Sonnenhöhenrechner" · Stand: 21.09.2026 (V54) · Vollständige Erklärung aller Angebote: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
       <div class="st-msec">
         <h3>Verantwortlicher</h3>
         <p>Fabian Bussenius<br>Jüthornstraße 50<br>22043 Hamburg<br>E-Mail: <a href="mailto:fabibuss@web.de">fabibuss@web.de</a> · <a href="https://ingenieur-tools.de/impressum.html" target="_blank" rel="noopener noreferrer">Impressum</a></p>
@@ -2003,6 +2003,19 @@ document.addEventListener('DOMContentLoaded', init);
         der Logs legt Vercel fest.</p>
       </div>
       <div class="st-msec">
+        <h3>Reichweitenmessung (optional, nur nach Einwilligung)</h3>
+        <p>Sie können uns erlauben, <strong>anonymisierte Besuchsstatistiken</strong> zu erheben (Vercel Web Analytics).
+        Bei Aktivierung werden übermittelt: aufgerufene URL, Referrer, grobe Geolocation (Stadt-/Länderebene),
+        Betriebssystem, Browsertyp/-version, Gerätetyp — aggregiert; <strong>keine Cookies, kein
+        Cross-Site-Tracking</strong>; Session-Hash wird nach spätestens 24&nbsp;h verworfen. Rechtsgrundlage: Ihre
+        <strong>Einwilligung</strong> (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO); US-Übermittlung ebenfalls auf
+        Grundlage der Einwilligung (Art.&nbsp;49 Abs.&nbsp;1 lit.&nbsp;a DSGVO; Vercel DPF-zertifiziert). Vollständig
+        optional — alle Funktionen arbeiten auch ohne. <strong>Widerruf jederzeit</strong> (Art.&nbsp;7 Abs.&nbsp;3)
+        über den Schalter; Status im Browserspeicher „pvw_analytics_consent“ (§&nbsp;25 Abs.&nbsp;1 TDDDG).
+        Keine Ausrichtung auf Kinder und Jugendliche.</p>
+        <button type="button" id="st-va-toggle" style="margin-top:6px;padding:7px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f3f4f6;color:#333;font-size:13px;cursor:pointer;">Besuchsstatistik: <strong id="st-va-state">–</strong></button>
+      </div>
+      <div class="st-msec">
         <h3>Ihre Rechte</h3>
         <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer
         personenbezogenen Daten sowie auf Datenübertragbarkeit und auf <strong>Widerspruch</strong> (Art.&nbsp;21 DSGVO).
@@ -2010,7 +2023,7 @@ document.addEventListener('DOMContentLoaded', init);
       </div>
     </div>
     <div id="st-ds-en" style="display:none;">
-      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">for the application "Sun Tracker – solar elevation calculator" · Version: 20.09.2026 · Full privacy policy for all services: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
+      <p class="st-mlead" style="font-size:.82rem;color:var(--muted);">for the application "Sun Tracker – solar elevation calculator" · Version: 21.09.2026 (V06) · Full privacy policy for all services: <a href="https://ingenieur-tools.de/datenschutz.html" target="_blank" rel="noopener noreferrer">ingenieur-tools.de/datenschutz.html</a></p>
       <div class="st-msec">
         <h3>Controller</h3>
         <p>Fabian Bussenius<br>Jüthornstraße 50<br>22043 Hamburg<br>Germany<br>Email: <a href="mailto:fabibuss@web.de">fabibuss@web.de</a> · <a href="https://ingenieur-tools.de/impressum.html" target="_blank" rel="noopener noreferrer">Legal notice</a></p>
@@ -2042,6 +2055,18 @@ document.addEventListener('DOMContentLoaded', init);
         EU-US Data Privacy Framework (DPF); Vercel determines the retention period of the logs.</p>
       </div>
       <div class="st-msec">
+        <h3>Reach measurement (optional, consent-based)</h3>
+        <p>You can allow us to collect <strong>anonymised usage statistics</strong> (Vercel Web Analytics).
+        When enabled, the following are transmitted: requested URL, referrer, coarse geolocation
+        (city/country level), operating system, browser type/version, device type — aggregated;
+        <strong>no cookies, no cross-site tracking</strong>; session hash discarded after at most 24&nbsp;h.
+        Legal basis: your <strong>consent</strong> (Art.&nbsp;6(1)(a) GDPR); transfer to the US also based on
+        consent (Art.&nbsp;49(1)(a) GDPR; Vercel is DPF-certified). Entirely optional — all features work
+        without it. <strong>Revoke anytime</strong> (Art.&nbsp;7(3)) via the toggle; state stored in browser
+        storage as "pvw_analytics_consent" (§&nbsp;25(1) TDDDG). No targeting of children.</p>
+        <button type="button" id="st-va-toggle-en" style="margin-top:6px;padding:7px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f3f4f6;color:#333;font-size:13px;cursor:pointer;">Usage statistics: <strong id="st-va-state-en">–</strong></button>
+      </div>
+      <div class="st-msec">
         <h3>Your rights</h3>
         <p>You have the right to access, rectification, erasure, restriction of processing, data portability and
         to <strong>object</strong> (Art.&nbsp;21 GDPR). Complaints may be addressed to the supervisory authority: <a href="https://datenschutz-hamburg.de/" target="_blank" rel="noopener noreferrer">Hamburgische Beauftragte für Datenschutz und Informationsfreiheit (HmbBfDI)</a>.</p>
@@ -2068,5 +2093,53 @@ document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
 
+<script>
+/* V54 — Vercel Web Analytics opt-in (Art. 6 lit. a + Art. 49 lit. a DSGVO). Kein Request vor Klick. */
+(function () {
+  'use strict';
+  var KEY = 'pvw_analytics_consent';
+  var injected = false;
+  function readConsent() { try { return localStorage.getItem(KEY) === 'yes'; } catch (e) { return false; } }
+  function injectAnalytics() {
+    if (injected) return; injected = true;
+    if (document.head.querySelector('script[src*="/_vercel/insights/script.js"]')) return;
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    var s = document.createElement('script');
+    s.defer = true; s.src = '/_vercel/insights/script.js';
+    s.onerror = function () {};
+    document.head.appendChild(s);
+  }
+  function bind(toggleId, stateId) {
+    var b = document.getElementById(toggleId), s = document.getElementById(stateId);
+    if (!b) return;
+    function ui() {
+      var on = readConsent();
+      var st = document.getElementById(stateId);
+      if (s) s.textContent = (document.documentElement.lang === 'en' || toggleId.indexOf('-en') > -1) ? (on ? 'ON' : 'OFF') : (on ? 'AN' : 'AUS');
+      b.style.background = on ? '#065f46' : '#f3f4f6';
+      b.style.borderColor = on ? '#065f46' : '#d1d5db';
+      b.style.color = on ? '#fff' : '#333';
+    }
+    b.addEventListener('click', function () {
+      var on = !readConsent();
+      try { localStorage.setItem(KEY, on ? 'yes' : 'no'); } catch (e) {}
+      if (on) injectAnalytics();
+      ui();
+    });
+    ui();
+  }
+  bind('st-va-toggle', 'st-va-state');
+  bind('st-va-toggle-en', 'st-va-state-en');
+  if (readConsent()) {
+    injected = true;
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    var s = document.createElement('script');
+    s.defer = true; s.src = '/_vercel/insights/script.js';
+    s.onerror = function () {};
+    document.head.appendChild(s);
+  }
+})();
+</script>
 </body>
+
 </html>
