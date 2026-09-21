@@ -1,7 +1,8 @@
 # Sun Tracker — 20-Punkteplan (Konzeption → Umsetzung → Test)
 
-> **STATUS (20.09.2026, V05):** Alle Phasen A–D umgesetzt + DSGVO V53 (Hosting-Block Vercel).
-> Aktive Version: `src/Sun_Tracker_V05_2026-09-20.html` · Live: sonne.ingenieur-tools.de (Vercel) ·
+> **STATUS (21.09.2026, V06):** Alle Phasen A–D umgesetzt + DSGVO V53 (Hosting-Block Vercel)
+> + **V54: Vercel Analytics opt-in DE/EN (Toggle im DS-Modal, Key pvw_analytics_consent).**
+> Aktive Version: `src/Sun_Tracker_V06_2026-09-21.html` · Live: sonne.ingenieur-tools.de (Vercel) ·
 > Historie: V04 (31.08.) hatte noch den GitHub-Hosting-Block. (DSGVO-Update: Datenschutz-Modal DE/EN, Drittland/DPF, HmbBfDI,
 > Widerspruch, Stand — deployed als `gh-pages`). V03 war der vorherige funktionale Stand. Dieser Plan
 > dient als **historischer Referenzplan** — der aktuelle Stand steht in `docs/ENTWICKLUNG.md`. Die hier

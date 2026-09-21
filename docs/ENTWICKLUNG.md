@@ -6,7 +6,7 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 
 ---
 
-## 1. Projektübersicht (Stand: 20.09.2026, V05)
+## 1. Projektübersicht (Stand: 21.09.2026, V06)
 
 | Feld | Wert |
 |---|---|
@@ -15,13 +15,13 @@ Sie enthält Stand, Architektur, Formeln, Entscheidungen, Bugs, Teststatus und n
 | Plattform | Browser (Single-File HTML), später VPS |
 | Vorgänger | Python/tkinter `Sonnenstand_20181006_12–14` (FBU, 28.02.2020) |
 | Referenz-Version | V2.1 (`_archiv_alt/Sonnenstand_20181006_14.py`) — korrekte Astronomie |
-| **Aktuelle App** | `src/Sun_Tracker_V05_2026-09-20.html` (aktiv, **V53-DSGVO: Hosting-Block Vercel + Stand 20.09.**, DE+EN; ~127 KB). Deploy-Basis: gh-pages `index.html` → **Vercel** (`sonne.ingenieur-tools.de`) via `scripts/deploy_vercel.sh`. |
+| **Aktuelle App** | `src/Sun_Tracker_V06_2026-09-21.html` (aktiv, **V54: Vercel Analytics opt-in DE/EN + Stand 21.09.**, DE+EN; ~128 KB). Deploy-Basis: gh-pages `index.html` → **Vercel** (`sonne.ingenieur-tools.de`) via `scripts/deploy_vercel.sh`. |
 | **Berechnungs-Kern** | `src/suncalc.js` (pur, DOM-frei, Node-testbar) |
 | **Versionierung** | Datei-Endung `<Name>_V<Nummer>.html` (Nutzer-Konvention) |
 | **Status** | ✅ **Funktional & alle Tests grün (118/118) · LIVE auf Vercel** |
 
 > **Wichtig:** `src/Sun_Tracker_V01.html` … `V04.html` sind **ältere Revisionen** (V04 hatte noch
-> den GitHub-Hosting-Block — 20.09. obsolet). Arbeite **immer** mit `Sun_Tracker_V05_2026-09-20.html`.
+> den GitHub-Hosting-Block — 20.09. obsolet). Arbeite **immer** mit `Sun_Tracker_V06_2026-09-21.html`.
 > **Hosting (20.09.):** Vercel-Projekt `sun-tracker` (Team pi-brain); GitHub Pages nur Archiv.
 > Die alte HTTPS-Zombie-Doku (§ 13.2 unten) ist **historisch** — Problem existiert nicht mehr.
 
@@ -320,7 +320,7 @@ curl -s -o jspdf.umd.min.js https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/j
 |---|---|
 | **Live-URL** | `https://sonne.ingenieur-tools.de/` — **Vercel** seit 20.09.2026 (HTTPS, LE bis 19.12.26) |
 | **GitHub-Repo** | `https://github.com/PiBrainPi/sun-tracker` (öffentlich; GitHub-Pages = Archiv) |
-| **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE — aktiv: `Sun_Tracker_V05_2026-09-20.html`) |
+| **Quell-Branch** | `main` (Quellcode: src, tests, docs, README, LICENSE — aktiv: `Sun_Tracker_V06_2026-09-21.html`) |
 | **Deploy-Basis** | `gh-pages` (nur `index.html`) → `scripts/deploy_vercel.sh` (Vercel-Projekt `sun-tracker`) |
 | **Domain** | `sonne.ingenieur-tools.de` (CNAME → `eaa66ba81ff17087.vercel-dns-017.com.` in netcup CloudDNS, TTL 3600) |
 | **Lizenz** | MIT (Copyright Fabian Bussenius) |
